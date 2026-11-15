@@ -6,14 +6,15 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { PAPEIS, gereUsuarios, registraPagamentos, veAgenda, veHistorico, vePacientes, type Papel } from '@/lib/permissoes'
 
-type Item = { href: string; texto: string; pode?: (p: Papel) => boolean; contador?: boolean }
+type Item = { href: string; texto: string; pode?: (p: Papel) => boolean; contador?: 'pedidos' | 'lembretes' }
 
 const ITENS: Item[] = [
   { href: '/sistema', texto: 'Painel' },
-  { href: '/sistema/agenda', texto: 'Agenda', pode: veAgenda },
-  { href: '/sistema/pre-cadastros', texto: 'Pedidos de contato', contador: true, pode: vePacientes },
+  { href: '/sistema/agenda', texto: 'Agenda', contador: 'lembretes', pode: veAgenda },
+  { href: '/sistema/pre-cadastros', texto: 'Pedidos de contato', contador: 'pedidos', pode: vePacientes },
   { href: '/sistema/pacientes', texto: 'Pacientes', pode: vePacientes },
   { href: '/sistema/financeiro', texto: 'Financeiro', pode: registraPagamentos },
+  { href: '/sistema/lembretes', texto: 'Lembretes', pode: veAgenda },
   { href: '/sistema/usuarios', texto: 'Usuários', pode: gereUsuarios },
   { href: '/sistema/historico', texto: 'Histórico de acessos', pode: veHistorico },
   { href: '/sistema/minha-senha', texto: 'Minha senha' },
@@ -32,9 +33,11 @@ function FormSair({ className = '' }: { className?: string }) {
 export function Menu({
   usuario,
   novosPedidos = 0,
+  lembretes = 0,
 }: {
   usuario: { nome: string; papel: Papel }
   novosPedidos?: number
+  lembretes?: number
 }) {
   const caminho = usePathname()
   const [aberto, setAberto] = useState(false)
@@ -53,9 +56,9 @@ export function Menu({
               }`}
             >
               {item.texto}
-              {item.contador && novosPedidos > 0 && (
+              {item.contador && (item.contador === 'pedidos' ? novosPedidos : lembretes) > 0 && (
                 <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${ativo(item.href) ? 'bg-white text-marca-700' : 'bg-amber-100 text-amber-800'}`}>
-                  {novosPedidos}
+                  {item.contador === 'pedidos' ? novosPedidos : lembretes}
                 </span>
               )}
             </Link>
@@ -92,7 +95,7 @@ export function Menu({
           aria-expanded={aberto}
         >
           {aberto ? 'Fechar' : 'Menu'}
-          {!aberto && novosPedidos > 0 && <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-amber-500" />}
+          {!aberto && novosPedidos + lembretes > 0 && <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-amber-500" />}
         </button>
       </div>
 

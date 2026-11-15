@@ -4,6 +4,7 @@ import { exigirAcessoPacientes } from '@/lib/auth'
 import { hojeLocal, localParaUtc, rotuloDia, segundaDaSemana, somarDias, utcParaLocal } from '@/lib/horario'
 import { MODALIDADES_CURTAS, STATUS_ATENDIMENTO, TOM_ATENDIMENTO } from '@/lib/rotulos'
 import { Cabecalho, Cartao, Etiqueta, LinkBotao } from '@/components/ui'
+import { LembretesAgora } from '@/components/mensagens'
 
 export default async function Agenda({ searchParams }: { searchParams: Promise<{ semana?: string }> }) {
   await exigirAcessoPacientes()
@@ -27,6 +28,7 @@ export default async function Agenda({ searchParams }: { searchParams: Promise<{
         descricao={`Semana de ${fmt(segunda)} a ${fmt(somarDias(segunda, 6))}`}
         acoes={<LinkBotao href="/sistema/agenda/novo" variante="primario">+ Agendar</LinkBotao>}
       />
+      <LembretesAgora />
       <div className="mb-4 flex gap-2">
         <LinkBotao href={`/sistema/agenda?semana=${somarDias(segunda, -7)}`}>← Anterior</LinkBotao>
         <LinkBotao href="/sistema/agenda">Hoje</LinkBotao>

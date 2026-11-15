@@ -6,6 +6,7 @@ import { AREAS, MODALIDADES_CURTAS, STATUS_ATENDIMENTO, TOM_ATENDIMENTO } from '
 import { hojeLocal, localParaUtc, somarDias, utcParaLocal } from '@/lib/horario'
 import { Aviso, Cabecalho, Cartao, Etiqueta, Indicador, LinkBotao, Vazio } from '@/components/ui'
 import { PAPEIS, vePacientes } from '@/lib/permissoes'
+import { LembretesAgora } from '@/components/mensagens'
 
 export default async function Painel() {
   const usuario = await exigirUsuario()
@@ -48,6 +49,7 @@ export default async function Painel() {
         acoes={<LinkBotao href="/sistema/pacientes/novo" variante="primario">+ Novo paciente</LinkBotao>}
       />
 
+      <LembretesAgora />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Indicador titulo="Pedidos novos" valor={novos} detalhe="Ainda sem resposta" href="/sistema/pre-cadastros" />
         <Indicador titulo="Em contato" valor={emContato} href="/sistema/pre-cadastros" />

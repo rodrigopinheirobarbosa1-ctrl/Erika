@@ -30,6 +30,10 @@ dev: explicar passos em português, bem detalhados. Nada roda no computador dele
   nunca editar uma já usada. Token aleatório, uso único, 15 dias; respostas em JSON
   criptografado, nunca alteradas depois de enviadas. Secretária gera/envia o link, mas só
   ADMIN/TOTAL leem as respostas.
+- Mensagens ao paciente (`ModeloMensagem`/`EnvioMensagem`): envio COM UM TOQUE (link
+  wa.me), não automático — decisão do usuário; automático exigiria API oficial do
+  WhatsApp Business + cron frequente. Modelos padrão com ids fixos (`garantirModelos`).
+  `lembretesPendentes` mostra só o lembrete mais próximo de cada sessão.
 - Enums do Prisma: usar os nomes (`'PRESENCIAL'`), valores em CENTAVOS, datas de calendário à meia-noite UTC.
 - O repositório é PÚBLICO: nunca commitar dados reais, documentos ou chaves.
 - Divulgação de psicólogo (CFP): sempre mostrar nome + CRP; não usar depoimentos de

@@ -11,6 +11,10 @@ export const site = {
   crp: 'CRP 01/31768',
   cidade: 'Brasília/DF',
 
+  // Endereço do consultório, usado nas mensagens de sessão presencial
+  // (vazio = a mensagem diz só "no consultório").
+  enderecoConsultorio: '',
+
   // Preencha quando tiver (deixe '' para esconder):
   whatsapp: '', // ex.: '61999998888'
   instagram: '', // ex.: 'erikadias.psi' (sem o @)

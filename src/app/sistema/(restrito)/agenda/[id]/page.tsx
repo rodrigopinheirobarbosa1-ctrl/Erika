@@ -14,6 +14,7 @@ import { BotaoEnviar, Formulario } from '@/components/form'
 import { Caixa, Selecao, Texto } from '@/components/campos'
 import { LinhaDoTempo, NovoRegistro } from '@/components/prontuario'
 import { alterarAtendimento, excluirAgendamento, mudarStatus } from '../actions'
+import { MensagensSessao } from '@/components/mensagens'
 
 const RAPIDOS: { status: StatusAtendimento; texto: string }[] = [
   { status: 'REALIZADO', texto: 'Realizado' },
@@ -22,9 +23,10 @@ const RAPIDOS: { status: StatusAtendimento; texto: string }[] = [
   { status: 'DESMARCADO_PSICOLOGA', texto: 'Psicóloga desmarcou' },
 ]
 
-export default async function Sessao({ params }: { params: Promise<{ id: string }> }) {
+export default async function Sessao({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ novo?: string }> }) {
   const usuario = await exigirAcessoPacientes()
   const { id } = await params
+  const { novo } = await searchParams
   const a = await db.atendimento.findUnique({
     where: { id },
     include: {
@@ -50,6 +52,7 @@ export default async function Sessao({ params }: { params: Promise<{ id: string 
       />
 
       <div className="space-y-5">
+        {novo && <MensagensSessao atendimentoId={id} destaque />}
         <Cartao titulo="Sessão" acao={<Etiqueta tom={TOM_ATENDIMENTO[a.status]}>{STATUS_ATENDIMENTO[a.status]}</Etiqueta>}>
           <dl className="grid gap-4 sm:grid-cols-2">
             <Dado rotulo="Modalidade">{MODALIDADES[a.modalidade]}</Dado>
@@ -136,6 +139,8 @@ export default async function Sessao({ params }: { params: Promise<{ id: string 
             )}
           </div>
         </Cartao>
+
+        {!novo && <MensagensSessao atendimentoId={id} />}
 
         {clinico && (
           <Cartao titulo="🔒 Prontuário desta sessão">

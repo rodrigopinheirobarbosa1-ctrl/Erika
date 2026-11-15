@@ -223,6 +223,7 @@ model Atendimento {
   /// Agendamentos criados juntos pelo "repetir toda semana".
   serieId             String?
   registros           RegistroProntuario[]
+  envios              EnvioMensagem[]
   criadoEm            DateTime            @default(now())
   atualizadoEm        DateTime            @updatedAt
 
@@ -370,4 +371,43 @@ model FichaAnamnese {
   @@index([status, criadoEm])
   @@index([pacienteId])
   @@index([preCadastroId])
+}
+
+// ----------------------------------------------------------------------------
+// MENSAGENS AO PACIENTE (confirmação e lembretes, enviados com um toque)
+// ----------------------------------------------------------------------------
+
+enum TipoMensagem {
+  AGENDAMENTO
+  LEMBRETE
+}
+
+/// Texto da mensagem de confirmação e de cada lembrete. A psicóloga edita,
+/// cria e desliga. Variáveis: {nome} {data} {hora} {onde} {serie}.
+model ModeloMensagem {
+  id              String          @id @default(cuid())
+  tipo            TipoMensagem
+  nome            String
+  /// Lembrete: quantos minutos antes da sessão (1440 = 1 dia, 60 = 1 hora).
+  antecedenciaMin Int?
+  texto           String
+  ativo           Boolean         @default(true)
+  envios          EnvioMensagem[]
+  criadoEm        DateTime        @default(now())
+  atualizadoEm    DateTime        @updatedAt
+}
+
+/// Registro de que uma mensagem foi enviada (ou pulada) para uma sessão.
+model EnvioMensagem {
+  id             String          @id @default(cuid())
+  atendimentoId  String
+  atendimento    Atendimento     @relation(fields: [atendimentoId], references: [id], onDelete: Cascade)
+  modeloId       String?
+  modelo         ModeloMensagem? @relation(fields: [modeloId], references: [id], onDelete: SetNull)
+  pulado         Boolean         @default(false)
+  enviadoPorNome String
+  enviadoEm      DateTime        @default(now())
+
+  @@unique([atendimentoId, modeloId])
+  @@index([enviadoEm])
 }

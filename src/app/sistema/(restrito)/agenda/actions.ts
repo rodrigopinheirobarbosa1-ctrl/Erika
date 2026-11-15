@@ -85,7 +85,9 @@ export async function agendar(_e: EstadoForm, dados: FormData): Promise<EstadoFo
     resumo: `Agendou ${horarios.length > 1 ? `${horarios.length} sessões semanais` : 'sessão'} de ${paciente.nome} a partir de ${rotuloInstante(primeiro)}`,
   })
   revalidatePath('/sistema', 'layout')
-  redirect(`/sistema/agenda?semana=${segundaDaSemana(d.data)}`)
+  // Abre a primeira sessão criada, com a confirmação ao paciente em destaque.
+  const criada = await db.atendimento.findFirst({ where: { pacienteId: paciente.id, inicio: primeiro }, orderBy: { criadoEm: 'desc' }, select: { id: true } })
+  redirect(criada ? `/sistema/agenda/${criada.id}?novo=1` : `/sistema/agenda?semana=${segundaDaSemana(d.data)}`)
 }
 
 export async function alterarAtendimento(id: string, _e: EstadoForm, dados: FormData): Promise<EstadoForm> {
