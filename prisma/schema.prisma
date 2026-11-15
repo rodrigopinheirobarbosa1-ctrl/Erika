@@ -124,6 +124,8 @@ model PreCadastro {
   modalidade       Modalidade?
   area             AreaAtendimento?
   melhorHorario    String?
+  /// SITE = formulário do site; WHATSAPP/INDICACAO/OUTRO = registrado à mão no sistema.
+  origem           String            @default("SITE")
   /// O que a pessoa escreveu sobre o motivo da procura (criptografado).
   motivoCripto     String?
   consentimentoEm  DateTime

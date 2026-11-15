@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { exigirAcessoPacientes } from '@/lib/auth'
 import { formatarDataHora, formatarTelefone } from '@/lib/formatos'
 import { AREAS, MODALIDADES, STATUS_PRE } from '@/lib/rotulos'
-import { Cabecalho, Cartao, Etiqueta, Vazio } from '@/components/ui'
+import { Cabecalho, Cartao, Etiqueta, LinkBotao, Vazio } from '@/components/ui'
 
 const TOM_PRE: Record<StatusPreCadastro, 'amarelo' | 'azul' | 'verde' | 'cinza'> = {
   NOVO: 'amarelo',
@@ -25,7 +25,11 @@ export default async function PreCadastros({ searchParams }: { searchParams: Pro
 
   return (
     <div className="mx-auto max-w-5xl">
-      <Cabecalho titulo="Pedidos de contato" descricao="Enviados pelo formulário “Agende sua consulta” do site." />
+      <Cabecalho
+        titulo="Pedidos de contato"
+        descricao="Pelo formulário do site ou registrados à mão (WhatsApp, indicação)."
+        acoes={<LinkBotao href="/sistema/pre-cadastros/novo" variante="primario">+ Registrar contato do WhatsApp</LinkBotao>}
+      />
       <div className="mb-4 flex gap-2 text-sm">
         {[
           ['abertos', 'Em aberto'],

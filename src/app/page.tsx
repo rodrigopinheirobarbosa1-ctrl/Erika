@@ -5,6 +5,7 @@ import { site } from '@/lib/site'
 import { linkWhatsapp } from '@/lib/formatos'
 import { CabecalhoSite } from '@/components/site/cabecalho'
 import { FormularioPreCadastro } from '@/components/site/formulario-pre-cadastro'
+import { WhatsappFlutuante } from '@/components/site/whatsapp-flutuante'
 import {
   IconeAgenda,
   IconeBroto,
@@ -112,9 +113,15 @@ export default function PaginaInicial() {
                 <a href="#agende" className="btn-site">
                   Agende sua consulta
                 </a>
-                <a href="#areas" className="btn-site-claro">
-                  Conheça as áreas de atuação
-                </a>
+                {site.whatsapp ? (
+                  <a href={linkWhatsapp(site.whatsapp, site.mensagemWhatsapp)} target="_blank" rel="noopener noreferrer" className="btn-site-claro">
+                    <IconeWhatsapp /> Falar pelo WhatsApp
+                  </a>
+                ) : (
+                  <a href="#areas" className="btn-site-claro">
+                    Conheça as áreas de atuação
+                  </a>
+                )}
               </div>
               <p className="mt-6 text-sm text-tinta/70">Presencial · Online · Em domicílio — {site.cidade}</p>
             </div>
@@ -270,14 +277,15 @@ export default function PaginaInicial() {
               </span>
               <h2 className="titulo-secao mt-6">Agende sua consulta</h2>
               <p className="mt-4 text-lg leading-relaxed text-tinta/85">
-                Preencha o formulário e eu entro em contato para conversarmos sobre horários, valores e a modalidade de atendimento
-                que fica melhor para você.
+                {site.whatsapp
+                  ? 'Fale comigo direto pelo WhatsApp ou, se preferir, preencha o formulário que eu entro em contato para conversarmos sobre horários, valores e a modalidade de atendimento.'
+                  : 'Preencha o formulário e eu entro em contato para conversarmos sobre horários, valores e a modalidade de atendimento que fica melhor para você.'}
               </p>
               <ul className="mt-6 space-y-3 text-tinta/90">
                 {site.whatsapp && (
                   <li>
                     <a
-                      href={linkWhatsapp(site.whatsapp, 'Olá, Érika! Vim pelo site e gostaria de agendar uma consulta.')}
+                      href={linkWhatsapp(site.whatsapp, site.mensagemWhatsapp)}
                       className="btn-site"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -310,6 +318,8 @@ export default function PaginaInicial() {
           </div>
         </Secao>
       </main>
+
+      <WhatsappFlutuante />
 
       {/* -------------------------------------------------- RODAPÉ */}
       <footer className="border-t border-nude bg-blush/60 px-4 py-10 text-center sm:px-6">
