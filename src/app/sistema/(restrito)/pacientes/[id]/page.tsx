@@ -10,6 +10,7 @@ import { escreveProntuario } from '@/lib/permissoes'
 import Link from '@/components/link'
 import { LinhaDoTempo, NovoRegistro } from '@/components/prontuario'
 import { FinanceiroPaciente } from '@/components/financeiro-paciente'
+import { FichasAnamnese } from '@/components/fichas-anamnese'
 import { Aviso, Cabecalho, Cartao, Dado, Etiqueta, LinkBotao } from '@/components/ui'
 
 export default async function FichaPaciente({ params }: { params: Promise<{ id: string }> }) {
@@ -23,7 +24,7 @@ export default async function FichaPaciente({ params }: { params: Promise<{ id: 
   const queixa = clinico ? descriptografar(p.queixaCripto) : null
   const observacoes = clinico ? descriptografar(p.observacoesCripto) : null
   const agora = new Date()
-  const [proximas, anteriores, totais, registros, contaSessoes, pagamentos] = await Promise.all([
+  const [proximas, anteriores, totais, registros, contaSessoes, pagamentos, fichas] = await Promise.all([
     db.atendimento.findMany({ where: { pacienteId: p.id, inicio: { gte: agora } }, orderBy: { inicio: 'asc' }, take: 6 }),
     db.atendimento.findMany({ where: { pacienteId: p.id, inicio: { lt: agora } }, orderBy: { inicio: 'desc' }, take: 10 }),
     db.atendimento.groupBy({ by: ['status'], where: { pacienteId: p.id, inicio: { lt: agora } }, _count: true }),
@@ -39,6 +40,7 @@ export default async function FichaPaciente({ params }: { params: Promise<{ id: 
       select: { id: true, inicio: true, status: true, valorCentavos: true, cobrarFalta: true },
     }),
     db.pagamento.findMany({ where: { pacienteId: p.id }, orderBy: { data: 'desc' } }),
+    db.fichaAnamnese.findMany({ where: { pacienteId: p.id }, orderBy: { criadoEm: 'desc' } }),
   ])
   const conta = (s: string) => totais.find((t) => t.status === s)?._count ?? 0
   const podeEscrever = escreveProntuario(usuario.papel)
@@ -150,6 +152,8 @@ export default async function FichaPaciente({ params }: { params: Promise<{ id: 
             </div>
           ))}
         </Cartao>
+
+        <FichasAnamnese fichas={fichas} alvo={{ pacienteId: p.id }} nome={p.nomeSocial || p.nome} telefone={p.telefone} clinico={clinico} />
 
         <FinanceiroPaciente pacienteId={p.id} sessoes={contaSessoes} pagamentos={pagamentos} />
 

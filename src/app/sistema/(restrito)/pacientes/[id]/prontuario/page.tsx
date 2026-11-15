@@ -8,6 +8,8 @@ import { rotuloInstante } from '@/lib/horario'
 import { site } from '@/lib/site'
 import { STATUS_ATENDIMENTO, TIPOS_REGISTRO } from '@/lib/rotulos'
 import { BotaoImprimir } from '@/components/botao-imprimir'
+import { MODELOS } from '@/lib/anamnese/modelo'
+import { apresentar, type Respostas } from '@/lib/anamnese/respostas'
 
 /** Prontuário completo, pronto para imprimir ou salvar em PDF (direito do paciente). */
 export default async function ProntuarioCompleto({ params }: { params: Promise<{ id: string }> }) {
@@ -19,6 +21,7 @@ export default async function ProntuarioCompleto({ params }: { params: Promise<{
     include: {
       registros: { orderBy: { criadoEm: 'asc' }, include: { atendimento: { select: { inicio: true } } } },
       atendimentos: { orderBy: { inicio: 'asc' }, where: { status: { in: ['REALIZADO', 'FALTOU'] } } },
+      fichas: { where: { status: 'RESPONDIDA' }, orderBy: { respondidaEm: 'asc' } },
     },
   })
   if (!p) notFound()
@@ -44,6 +47,25 @@ export default async function ProntuarioCompleto({ params }: { params: Promise<{
         </p>
         <p className="text-xs text-stone-500">Emitido em {formatarDataHora(new Date())} · documento sigiloso</p>
       </header>
+
+      {p.fichas.map((f) => {
+        const r = JSON.parse(descriptografar(f.respostasCripto)!) as Respostas
+        return (
+          <section key={f.id} className="mt-6">
+            <h2 className="font-serif text-xl">Ficha de anamnese (respondida pelo paciente em {formatarDataHora(f.respondidaEm!)})</h2>
+            {apresentar(MODELOS[r.versao], r).map((s) => (
+              <div key={s.titulo} className="mt-3 break-inside-avoid">
+                <p className="text-sm font-semibold">{s.titulo}</p>
+                {s.itens.filter((i) => i.valor).map((i) => (
+                  <p key={i.rotulo} className="whitespace-pre-wrap text-sm">
+                    <span className="text-stone-500">{i.rotulo}:</span> {i.valor}
+                  </p>
+                ))}
+              </div>
+            ))}
+          </section>
+        )
+      })}
 
       {p.queixaCripto && (
         <section className="mt-6">

@@ -131,6 +131,7 @@ model PreCadastro {
   observacaoCripto String?
   pacienteId       String?           @unique
   paciente         Paciente?         @relation(fields: [pacienteId], references: [id])
+  fichas           FichaAnamnese[]
   ip               String?
   criadoEm         DateTime          @default(now())
   atualizadoEm     DateTime          @updatedAt
@@ -182,6 +183,7 @@ model Paciente {
   atendimentos         Atendimento[]
   registros            RegistroProntuario[]
   pagamentos           Pagamento[]
+  fichas               FichaAnamnese[]
   criadoEm             DateTime         @default(now())
   atualizadoEm         DateTime         @updatedAt
 
@@ -328,4 +330,44 @@ model Despesa {
 
   @@index([vencimento])
   @@index([pagoEm])
+}
+
+// ----------------------------------------------------------------------------
+// FICHA DE ANAMNESE (enviada por link)
+// ----------------------------------------------------------------------------
+
+enum StatusFicha {
+  PENDENTE
+  RESPONDIDA
+  CANCELADA
+}
+
+/// Ficha de anamnese enviada por link (WhatsApp) a um interessado ou paciente.
+/// O link carrega o "token": aleatório (32 bytes), de uso único e com prazo.
+/// Quem tem o link só consegue PREENCHER a ficha, nunca ler nada. Depois de
+/// respondida, as respostas nunca mudam (fazem parte do prontuário).
+model FichaAnamnese {
+  id               String       @id @default(cuid())
+  token            String       @unique
+  /// Versão do modelo de perguntas usada (src/lib/anamnese/modelo.ts).
+  modeloVersao     Int
+  status           StatusFicha  @default(PENDENTE)
+  preCadastroId    String?
+  preCadastro      PreCadastro? @relation(fields: [preCadastroId], references: [id])
+  pacienteId       String?
+  paciente         Paciente?    @relation(fields: [pacienteId], references: [id])
+  /// Nome de quem vai receber (para a saudação e a lista).
+  nomeDestinatario String
+  expiraEm         DateTime
+  /// Respostas (JSON criptografado).
+  respostasCripto  String?
+  respondidaEm     DateTime?
+  consentimentoEm  DateTime?
+  ip               String?
+  enviadaPorNome   String
+  criadoEm         DateTime     @default(now())
+
+  @@index([status, criadoEm])
+  @@index([pacienteId])
+  @@index([preCadastroId])
 }

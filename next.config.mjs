@@ -19,7 +19,7 @@ const nextConfig = {
       },
       {
         // Área restrita: nunca guardar em cache nem aparecer no Google.
-        source: '/sistema/:path*',
+        source: '/(sistema|ficha)/:path*',
         headers: [
           { key: 'Cache-Control', value: 'no-store' },
           { key: 'X-Robots-Tag', value: 'noindex, nofollow' },

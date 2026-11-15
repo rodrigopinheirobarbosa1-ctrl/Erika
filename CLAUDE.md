@@ -25,6 +25,11 @@ dev: explicar passos em português, bem detalhados. Nada roda no computador dele
   apagado (estorno com motivo). Recibo oficial é no app Receita Saúde: o sistema só
   marca `reciboEmitido`. Secretária registra pagamentos; resumo/despesas/relatório só
   ADMIN e TOTAL (`veFinanceiro`).
+- Ficha de anamnese (`FichaAnamnese`, página pública `/ficha/[token]`): modelo em
+  `src/lib/anamnese/modelo.ts`, VERSIONADO — para mudar perguntas, criar nova versão,
+  nunca editar uma já usada. Token aleatório, uso único, 15 dias; respostas em JSON
+  criptografado, nunca alteradas depois de enviadas. Secretária gera/envia o link, mas só
+  ADMIN/TOTAL leem as respostas.
 - Enums do Prisma: usar os nomes (`'PRESENCIAL'`), valores em CENTAVOS, datas de calendário à meia-noite UTC.
 - O repositório é PÚBLICO: nunca commitar dados reais, documentos ou chaves.
 - Divulgação de psicólogo (CFP): sempre mostrar nome + CRP; não usar depoimentos de

@@ -9,12 +9,13 @@ import { Cabecalho, Cartao, Dado, LinkBotao } from '@/components/ui'
 import { BotaoEnviar, Formulario } from '@/components/form'
 import { AreaTexto, Selecao } from '@/components/campos'
 import { atualizarPreCadastro } from '../actions'
+import { FichasAnamnese } from '@/components/fichas-anamnese'
 
 export default async function PedidoDeContato({ params }: { params: Promise<{ id: string }> }) {
   const usuario = await exigirAcessoPacientes()
   const clinico = podeVerClinico(usuario)
   const { id } = await params
-  const p = await db.preCadastro.findUnique({ where: { id } })
+  const p = await db.preCadastro.findUnique({ where: { id }, include: { fichas: { orderBy: { criadoEm: 'desc' } } } })
   if (!p) notFound()
   await auditar({ usuario, acao: 'VISUALIZAR', entidade: 'PreCadastro', entidadeId: p.id, resumo: `Abriu o pedido de contato de ${p.nome}` })
 
@@ -39,11 +40,21 @@ export default async function PedidoDeContato({ params }: { params: Promise<{ id
         {p.pacienteId ? (
           <LinkBotao href={`/sistema/pacientes/${p.pacienteId}`}>Ver ficha do paciente</LinkBotao>
         ) : (
-          <LinkBotao href={`/sistema/pacientes/novo?pre=${p.id}`}>Cadastrar como paciente</LinkBotao>
+          <LinkBotao href={`/sistema/pacientes/novo?pre=${p.id}${p.fichas.find((f) => f.status === 'RESPONDIDA') ? `&ficha=${p.fichas.find((f) => f.status === 'RESPONDIDA')!.id}` : ''}`}>
+            Cadastrar como paciente
+          </LinkBotao>
         )}
       </div>
 
       <div className="space-y-5">
+        <FichasAnamnese
+          fichas={p.fichas}
+          alvo={{ preCadastroId: p.id }}
+          nome={p.nome}
+          telefone={p.telefone}
+          clinico={clinico}
+          linkCadastro={p.pacienteId ? undefined : (fichaId) => `/sistema/pacientes/novo?pre=${p.id}&ficha=${fichaId}`}
+        />
         <Cartao titulo="O que a pessoa enviou">
           <dl className="grid gap-4 sm:grid-cols-2">
             <Dado rotulo="Telefone">{formatarTelefone(p.telefone)}</Dado>

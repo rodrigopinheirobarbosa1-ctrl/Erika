@@ -108,6 +108,8 @@ export async function salvarPaciente(id: string | null, _e: EstadoForm, dados: F
           where: { id: d.preCadastroId, pacienteId: null },
           data: { pacienteId: p.id, status: 'CONVERTIDO' },
         })
+        // Fichas de anamnese do pedido passam a ser do paciente.
+        await tx.fichaAnamnese.updateMany({ where: { preCadastroId: d.preCadastroId, pacienteId: null }, data: { pacienteId: p.id } })
       }
       return p
     })

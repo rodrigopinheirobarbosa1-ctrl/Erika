@@ -20,6 +20,7 @@ export default async function PreCadastros({ searchParams }: { searchParams: Pro
     where: ver === 'todos' ? {} : { status: { in: ['NOVO', 'EM_CONTATO'] } },
     orderBy: { criadoEm: 'desc' },
     take: 300,
+    include: { fichas: { select: { status: true } } },
   })
 
   return (
@@ -50,7 +51,14 @@ export default async function PreCadastros({ searchParams }: { searchParams: Pro
                     </span>
                     <span className="block text-xs text-stone-400">{formatarDataHora(p.criadoEm)}</span>
                   </span>
-                  <Etiqueta tom={TOM_PRE[p.status]}>{STATUS_PRE[p.status]}</Etiqueta>
+                  <span className="flex flex-col items-end gap-1">
+                    <Etiqueta tom={TOM_PRE[p.status]}>{STATUS_PRE[p.status]}</Etiqueta>
+                    {p.fichas.some((f) => f.status === 'RESPONDIDA') ? (
+                      <Etiqueta tom="verde">Ficha recebida</Etiqueta>
+                    ) : p.fichas.some((f) => f.status === 'PENDENTE') ? (
+                      <Etiqueta tom="cinza">Ficha enviada</Etiqueta>
+                    ) : null}
+                  </span>
                 </Link>
               </li>
             ))}

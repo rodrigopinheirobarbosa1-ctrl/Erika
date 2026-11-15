@@ -21,7 +21,7 @@ export default async function Painel() {
     )
   }
   const hoje = hojeLocal()
-  const [novos, emContato, ativos, total, recentes, sessoesHoje] = await Promise.all([
+  const [novos, emContato, ativos, total, recentes, sessoesHoje, fichasRecebidas] = await Promise.all([
     db.preCadastro.count({ where: { status: 'NOVO' } }),
     db.preCadastro.count({ where: { status: 'EM_CONTATO' } }),
     db.paciente.count({ where: { status: 'ATIVO' } }),
@@ -31,6 +31,11 @@ export default async function Painel() {
       where: { inicio: { gte: localParaUtc(hoje, '00:00')!, lt: localParaUtc(somarDias(hoje, 1), '00:00')! } },
       include: { paciente: { select: { nome: true, nomeSocial: true } } },
       orderBy: { inicio: 'asc' },
+    }),
+    db.fichaAnamnese.findMany({
+      where: { status: 'RESPONDIDA', pacienteId: null },
+      orderBy: { respondidaEm: 'desc' },
+      select: { id: true, nomeDestinatario: true, respondidaEm: true, preCadastroId: true },
     }),
   ])
   const hora = Number(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo', hour: 'numeric', hour12: false }))
@@ -76,6 +81,22 @@ export default async function Painel() {
           </ul>
         )}
       </Cartao>
+
+      {fichasRecebidas.length > 0 && (
+        <Cartao titulo={`Fichas de anamnese recebidas (${fichasRecebidas.length})`} className="mt-6 ring-2 ring-emerald-200">
+          <ul className="-my-2 divide-y divide-stone-100">
+            {fichasRecebidas.map((f) => (
+              <li key={f.id}>
+                <Link href={`/sistema/pre-cadastros/${f.preCadastroId}`} className="-mx-2 flex justify-between gap-2 rounded-lg px-2 py-2.5 hover:bg-marca-50">
+                  <span className="text-stone-800">{f.nomeDestinatario}</span>
+                  <span className="text-xs text-stone-400">respondeu {formatarDataHora(f.respondidaEm!)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-stone-500">Abra o pedido para ver a ficha e cadastrar como paciente.</p>
+        </Cartao>
+      )}
 
       <Cartao titulo="Pedidos de contato em aberto" className="mt-6" acao={<Link href="/sistema/pre-cadastros" className="text-sm text-marca-700 hover:underline">Ver todos</Link>}>
         {recentes.length === 0 ? (
