@@ -18,3 +18,17 @@ dev: explicar passos em português, bem detalhados. Nada roda no computador dele
   pacientes nem prometer resultados.
 - Mudança de tabela: alterar `prisma/schema.prisma` e `npx prisma migrate dev --name descricao`.
 - Verificação: `npm test && npm run typecheck && npm run build`.
+
+## Mapa dos apps do usuário (nada roda no computador dele)
+
+Todos na **Vercel** (uma conta, região gru1), cada um com **seu próprio banco Neon**
+(instalação Neon via Vercel, plano **Launch**, pago por uso). Não presumir PC, Windows,
+SQLite ou Tailscale. Cada app tem os próprios usuários (não há login compartilhado).
+
+| App | Repositório | Observação |
+|---|---|---|
+| CEG | `ceg-app` (ramo padrão `vercel-neon`) | FastAPI + React; finanças pessoais |
+| Mathima | `Mathima` | Next.js + Prisma; **referência preferida** |
+| Mogno | `mogno-painel` | |
+| Trip | `Trip` | Next.js + Prisma; o usuário confia menos |
+| Érika (este) | `Erika` | banco Neon `erika`, dados de saúde |
