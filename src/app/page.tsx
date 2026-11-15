@@ -224,8 +224,18 @@ export default function PaginaInicial() {
         {/* -------------------------------------------------- SOBRE */}
         <Secao id="sobre">
           <div className="grid items-center gap-10 md:grid-cols-[auto_1fr]">
-            <div className="mx-auto flex h-60 w-60 items-center justify-center rounded-full bg-gradient-to-br from-nude to-blush p-3 shadow-inner sm:h-72 sm:w-72">
-              <Image src="/img/logo.png" alt={`Logotipo ${site.nome} Psicóloga`} width={395} height={390} className="h-full w-full" />
+            <div className="relative mx-auto w-64 sm:w-72 md:w-80">
+              {/* moldura em arco, com um "eco" deslocado no tom nude */}
+              <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-t-full rounded-b-[2rem] bg-nude" aria-hidden="true" />
+              <Image
+                src="/img/erika.jpg"
+                alt={`${site.nome}, psicóloga, sorrindo, sentada perto de uma janela com cortina clara`}
+                width={800}
+                height={1000}
+                sizes="(min-width: 768px) 20rem, 16rem"
+                className="relative h-auto w-full rounded-t-full rounded-b-[2rem] object-cover shadow-md"
+              />
+              <IconeFolha className="absolute -bottom-6 -left-6 h-20 w-20 text-salvia" />
             </div>
             <div>
               <p className="marca-texto text-xs text-terracota">
