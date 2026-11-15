@@ -59,6 +59,19 @@ export function Menu({
             </Link>
           </li>
         ))}
+        <li className="mt-2 border-t border-stone-100 pt-2">
+          {/* Abre o site público numa aba nova: o sistema continua aberto e logado. */}
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener"
+            className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-stone-600 transition hover:bg-marca-50"
+          >
+            Ver o site
+            <span aria-hidden="true">↗</span>
+            <span className="sr-only">(abre em nova aba)</span>
+          </a>
+        </li>
       </ul>
     </nav>
   )
