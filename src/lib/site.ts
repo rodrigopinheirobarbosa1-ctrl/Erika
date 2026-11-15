@@ -9,6 +9,8 @@ export const site = {
   profissao: 'Psicóloga',
   // Registro no Conselho Regional de Psicologia (obrigatório em toda divulgação).
   crp: 'CRP 01/31768',
+  // Domínio principal (os outros redirecionam para ele, configurado na Vercel).
+  dominio: 'erikadiaspsi.com.br',
   cidade: 'Brasília/DF',
 
   // Endereço do consultório, usado nas mensagens de sessão presencial

@@ -14,9 +14,7 @@ const sans = Jost({ subsets: ['latin'], weight: ['300', '400', '500'], variable:
 
 export const metadata: Metadata = {
   // Endereço público (a Vercel informa sozinha); usado na prévia ao compartilhar o link.
-  metadataBase: new URL(
-    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000',
-  ),
+  metadataBase: new URL(process.env.NODE_ENV === 'production' ? `https://${site.dominio}` : 'http://localhost:3000'),
   title: `${site.nome} · ${site.profissao} | ${site.crp}`,
   description:
     'Psicóloga em Brasília: acolhimento na gestação, no puerpério, na parentalidade e no cuidado com a saúde mental. Atendimento presencial, online ou em domicílio.',

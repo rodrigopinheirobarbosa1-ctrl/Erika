@@ -61,7 +61,10 @@ Use a **mesma conta da Vercel** dos outros apps (entrar com o GitHub).
 
 Toda alteração enviada ao GitHub (branch principal) é publicada sozinha pela Vercel.
 
-### Endereço próprio (opcional)
+### Endereço próprio
+
+Domínio principal: **erikadiaspsi.com.br** (em `src/lib/site.ts`). O **erikadias.psc.br** redireciona para ele
+(Vercel → Settings → Domains → Edit → Redirect).
 
 Para usar um domínio (ex.: `erikadias.psi.br` ou `erika.mathimagestao.com.br`):
 Vercel → projeto → **Settings → Domains → Add** e siga as instruções de DNS.
