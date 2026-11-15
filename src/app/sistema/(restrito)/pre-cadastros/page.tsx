@@ -1,7 +1,7 @@
 import type { StatusPreCadastro } from '@prisma/client'
 import Link from '@/components/link'
 import { db } from '@/lib/db'
-import { exigirUsuario } from '@/lib/auth'
+import { exigirAcessoPacientes } from '@/lib/auth'
 import { formatarDataHora, formatarTelefone } from '@/lib/formatos'
 import { AREAS, MODALIDADES, STATUS_PRE } from '@/lib/rotulos'
 import { Cabecalho, Cartao, Etiqueta, Vazio } from '@/components/ui'
@@ -14,7 +14,7 @@ const TOM_PRE: Record<StatusPreCadastro, 'amarelo' | 'azul' | 'verde' | 'cinza'>
 }
 
 export default async function PreCadastros({ searchParams }: { searchParams: Promise<{ ver?: string }> }) {
-  await exigirUsuario()
+  await exigirAcessoPacientes()
   const { ver = 'abertos' } = await searchParams
   const pedidos = await db.preCadastro.findMany({
     where: ver === 'todos' ? {} : { status: { in: ['NOVO', 'EM_CONTATO'] } },

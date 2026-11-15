@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { exigirUsuarioAction } from '@/lib/auth'
+import { exigirAcessoPacientesAction, podeVerClinico } from '@/lib/auth'
 import { auditar } from '@/lib/audit'
 import { criptografar } from '@/lib/cripto'
 import { cpfValido, lerData, lerReais, soDigitos } from '@/lib/formatos'
@@ -44,7 +44,8 @@ const esquema = z.object({
 })
 
 export async function salvarPaciente(id: string | null, _e: EstadoForm, dados: FormData): Promise<EstadoForm> {
-  const usuario = await exigirUsuarioAction()
+  const usuario = await exigirAcessoPacientesAction()
+  const clinico = podeVerClinico(usuario)
   const r = esquema.safeParse(Object.fromEntries(dados))
   if (!r.success) return { erro: r.error.issues[0].message }
   const d = r.data
@@ -89,8 +90,8 @@ export async function salvarPaciente(id: string | null, _e: EstadoForm, dados: F
     valorSessaoCentavos,
     status: d.status,
     inicioAtendimento: datas.inicioAtendimento ?? null,
-    queixaCripto: criptografar(d.queixa),
-    observacoesCripto: criptografar(d.observacoes),
+    // Textos clínicos: só a psicóloga grava. Para os outros perfis, ficam como estão.
+    ...(clinico ? { queixaCripto: criptografar(d.queixa), observacoesCripto: criptografar(d.observacoes) } : {}),
     // Guarda a data em que o consentimento foi marcado pela primeira vez.
     consentimentoLgpdEm: d.consentimentoLgpd ? (anterior?.consentimentoLgpdEm ?? new Date()) : null,
   }

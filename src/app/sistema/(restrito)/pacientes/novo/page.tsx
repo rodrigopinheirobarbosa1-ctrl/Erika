@@ -1,11 +1,12 @@
 import { db } from '@/lib/db'
-import { exigirUsuario } from '@/lib/auth'
+import { exigirAcessoPacientes, podeVerClinico } from '@/lib/auth'
 import { descriptografar } from '@/lib/cripto'
 import { Cabecalho, Aviso, LinkBotao } from '@/components/ui'
 import { FormularioPaciente, type DadosFormulario } from '../formulario'
 
 export default async function NovoPaciente({ searchParams }: { searchParams: Promise<{ pre?: string }> }) {
-  await exigirUsuario()
+  const usuario = await exigirAcessoPacientes()
+  const clinico = podeVerClinico(usuario)
   const { pre } = await searchParams
   let inicial: DadosFormulario = {}
   let aviso: string | null = null
@@ -20,7 +21,7 @@ export default async function NovoPaciente({ searchParams }: { searchParams: Pro
         email: p.email,
         modalidade: p.modalidade,
         area: p.area,
-        queixa: descriptografar(p.motivoCripto),
+        queixa: clinico ? descriptografar(p.motivoCripto) : null,
         comoConheceu: 'Site',
         preCadastroId: p.id,
         inicioAtendimento: new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z'),
@@ -37,7 +38,7 @@ export default async function NovoPaciente({ searchParams }: { searchParams: Pro
           <Aviso>{aviso}</Aviso>
         </div>
       )}
-      <FormularioPaciente id={null} p={inicial} />
+      <FormularioPaciente id={null} p={inicial} clinico={clinico} />
     </div>
   )
 }

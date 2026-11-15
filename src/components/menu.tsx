@@ -4,14 +4,16 @@ import Image from 'next/image'
 import Link from '@/components/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { PAPEIS, gereUsuarios, veHistorico, vePacientes, type Papel } from '@/lib/permissoes'
 
-type Item = { href: string; texto: string; soAdmin?: boolean; contador?: boolean }
+type Item = { href: string; texto: string; pode?: (p: Papel) => boolean; contador?: boolean }
 
 const ITENS: Item[] = [
   { href: '/sistema', texto: 'Painel' },
-  { href: '/sistema/pre-cadastros', texto: 'Pedidos de contato', contador: true },
-  { href: '/sistema/pacientes', texto: 'Pacientes' },
-  { href: '/sistema/historico', texto: 'Histórico de acessos', soAdmin: true },
+  { href: '/sistema/pre-cadastros', texto: 'Pedidos de contato', contador: true, pode: vePacientes },
+  { href: '/sistema/pacientes', texto: 'Pacientes', pode: vePacientes },
+  { href: '/sistema/usuarios', texto: 'Usuários', pode: gereUsuarios },
+  { href: '/sistema/historico', texto: 'Histórico de acessos', pode: veHistorico },
   { href: '/sistema/minha-senha', texto: 'Minha senha' },
 ]
 
@@ -29,18 +31,17 @@ export function Menu({
   usuario,
   novosPedidos = 0,
 }: {
-  usuario: { nome: string; papel: 'ADMIN' | 'ASSISTENTE' }
+  usuario: { nome: string; papel: Papel }
   novosPedidos?: number
 }) {
   const caminho = usePathname()
   const [aberto, setAberto] = useState(false)
-  const admin = usuario.papel === 'ADMIN'
   const ativo = (href: string) => (href === '/sistema' ? caminho === href : caminho === href || caminho.startsWith(href + '/'))
 
   const lista = (
     <nav>
       <ul className="space-y-0.5">
-        {ITENS.filter((i) => admin || !i.soAdmin).map((item) => (
+        {ITENS.filter((i) => !i.pode || i.pode(usuario.papel)).map((item) => (
           <li key={item.href}>
             <Link
               href={item.href}
@@ -98,7 +99,7 @@ export function Menu({
         <div className="flex-1 overflow-y-auto px-2 py-4">{lista}</div>
         <div className="border-t border-stone-200 px-4 py-3">
           <p className="truncate text-sm font-medium text-stone-700">{usuario.nome}</p>
-          <p className="truncate text-xs text-stone-400">{admin ? 'Administradora' : 'Assistente'}</p>
+          <p className="truncate text-xs text-stone-400">{PAPEIS[usuario.papel].nome}</p>
           <FormSair className="mt-2" />
         </div>
       </aside>

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
-import { exigirUsuario } from '@/lib/auth'
+import { exigirAcessoPacientes, podeVerClinico } from '@/lib/auth'
 import { auditar } from '@/lib/audit'
 import { descriptografar } from '@/lib/cripto'
 import { formatarDataHora, formatarTelefone, linkWhatsapp } from '@/lib/formatos'
@@ -11,7 +11,8 @@ import { AreaTexto, Selecao } from '@/components/campos'
 import { atualizarPreCadastro } from '../actions'
 
 export default async function PedidoDeContato({ params }: { params: Promise<{ id: string }> }) {
-  const usuario = await exigirUsuario()
+  const usuario = await exigirAcessoPacientes()
+  const clinico = podeVerClinico(usuario)
   const { id } = await params
   const p = await db.preCadastro.findUnique({ where: { id } })
   if (!p) notFound()
@@ -51,9 +52,11 @@ export default async function PedidoDeContato({ params }: { params: Promise<{ id
             <Dado rotulo="Assunto">{p.area ? AREAS[p.area] : ''}</Dado>
             <Dado rotulo="Melhor horário">{p.melhorHorario}</Dado>
             <Dado rotulo="Consentimento">{formatarDataHora(p.consentimentoEm)}</Dado>
-            <div className="sm:col-span-2">
-              <Dado rotulo="🔒 Motivo da procura">{descriptografar(p.motivoCripto)}</Dado>
-            </div>
+            {clinico && (
+              <div className="sm:col-span-2">
+                <Dado rotulo="🔒 Motivo da procura">{descriptografar(p.motivoCripto)}</Dado>
+              </div>
+            )}
           </dl>
         </Cartao>
 
@@ -73,7 +76,7 @@ export default async function PedidoDeContato({ params }: { params: Promise<{ id
                 ]}
               />
             )}
-            <AreaTexto rotulo="🔒 Anotações sobre o contato" nome="observacao" valor={descriptografar(p.observacaoCripto)} linhas={3} />
+            {clinico && <AreaTexto rotulo="🔒 Anotações sobre o contato" nome="observacao" valor={descriptografar(p.observacaoCripto)} linhas={3} />}
             <BotaoEnviar>Salvar</BotaoEnviar>
           </Formulario>
         </Cartao>

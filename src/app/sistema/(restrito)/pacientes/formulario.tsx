@@ -23,7 +23,7 @@ function Bloco({ titulo, children }: { titulo: string; children: React.ReactNode
   )
 }
 
-export function FormularioPaciente({ id, p }: { id: string | null; p: DadosFormulario }) {
+export function FormularioPaciente({ id, p, clinico }: { id: string | null; p: DadosFormulario; clinico: boolean }) {
   const valor = p.valorSessaoCentavos != null ? (p.valorSessaoCentavos / 100).toFixed(2).replace('.', ',') : ''
   return (
     <Formulario action={salvarPaciente.bind(null, id)} className="space-y-5">
@@ -70,15 +70,20 @@ export function FormularioPaciente({ id, p }: { id: string | null; p: DadosFormu
         <Texto rotulo="Como conheceu o trabalho" nome="comoConheceu" valor={p.comoConheceu} className="sm:col-span-2" />
       </Bloco>
 
-      <fieldset className="cartao p-4 sm:p-5">
-        <h2 className="font-serif text-xl text-cacau">Informações clínicas iniciais</h2>
-        <p className="mb-4 mt-1 text-xs text-stone-500">🔒 Gravadas de forma criptografada no banco.</p>
-        <div className="grid gap-4">
-          <AreaTexto rotulo="Queixa inicial / demanda" nome="queixa" valor={p.queixa} linhas={5} />
-          <AreaTexto rotulo="Observações gerais" nome="observacoes" valor={p.observacoes} linhas={4} />
-          <Caixa rotulo="Paciente (ou responsável) consentiu com o tratamento dos dados (LGPD) e com o contrato terapêutico" nome="consentimentoLgpd" marcado={!!p.consentimentoLgpdEm} />
-        </div>
-      </fieldset>
+      {clinico && (
+        <fieldset className="cartao p-4 sm:p-5">
+          <h2 className="font-serif text-xl text-cacau">Informações clínicas iniciais</h2>
+          <p className="mb-4 mt-1 text-xs text-stone-500">🔒 Gravadas de forma criptografada. Só a psicóloga vê.</p>
+          <div className="grid gap-4">
+            <AreaTexto rotulo="Queixa inicial / demanda" nome="queixa" valor={p.queixa} linhas={5} />
+            <AreaTexto rotulo="Observações gerais" nome="observacoes" valor={p.observacoes} linhas={4} />
+          </div>
+        </fieldset>
+      )}
+
+      <div className="cartao p-4 sm:p-5">
+        <Caixa rotulo="Paciente (ou responsável) consentiu com o tratamento dos dados (LGPD) e com o contrato terapêutico" nome="consentimentoLgpd" marcado={!!p.consentimentoLgpdEm} />
+      </div>
 
       <div className="flex flex-wrap gap-3">
         <BotaoEnviar>{id ? 'Salvar alterações' : 'Cadastrar paciente'}</BotaoEnviar>

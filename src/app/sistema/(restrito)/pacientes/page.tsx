@@ -1,7 +1,7 @@
 import type { Prisma, StatusPaciente } from '@prisma/client'
 import Link from '@/components/link'
 import { db } from '@/lib/db'
-import { exigirUsuario } from '@/lib/auth'
+import { exigirAcessoPacientes } from '@/lib/auth'
 import { formatarTelefone, idade } from '@/lib/formatos'
 import { AREAS, STATUS_PACIENTE } from '@/lib/rotulos'
 import { Cabecalho, Cartao, Etiqueta, LinkBotao, Vazio } from '@/components/ui'
@@ -9,7 +9,7 @@ import { Cabecalho, Cartao, Etiqueta, LinkBotao, Vazio } from '@/components/ui'
 const TOM: Record<StatusPaciente, 'verde' | 'amarelo' | 'cinza' | 'azul'> = { ATIVO: 'verde', PAUSADO: 'amarelo', ALTA: 'azul', INATIVO: 'cinza' }
 
 export default async function Pacientes({ searchParams }: { searchParams: Promise<{ busca?: string; situacao?: string }> }) {
-  await exigirUsuario()
+  await exigirAcessoPacientes()
   const { busca = '', situacao = 'ATIVO' } = await searchParams
   const filtro: Prisma.PacienteWhereInput = {}
   if (situacao !== 'TODOS' && situacao in STATUS_PACIENTE) filtro.status = situacao as StatusPaciente

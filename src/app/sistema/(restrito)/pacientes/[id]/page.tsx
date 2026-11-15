@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
-import { exigirUsuario } from '@/lib/auth'
+import { exigirAcessoPacientes, podeVerClinico } from '@/lib/auth'
 import { auditar } from '@/lib/audit'
 import { descriptografar } from '@/lib/cripto'
 import { formatarCpf, formatarData, formatarDataHora, formatarReais, formatarTelefone, idade, linkWhatsapp } from '@/lib/formatos'
@@ -8,14 +8,15 @@ import { AREAS, MODALIDADES, STATUS_PACIENTE } from '@/lib/rotulos'
 import { Aviso, Cabecalho, Cartao, Dado, LinkBotao } from '@/components/ui'
 
 export default async function FichaPaciente({ params }: { params: Promise<{ id: string }> }) {
-  const usuario = await exigirUsuario()
+  const usuario = await exigirAcessoPacientes()
   const { id } = await params
   const p = await db.paciente.findUnique({ where: { id } })
   if (!p) notFound()
 
   await auditar({ usuario, acao: 'VISUALIZAR', entidade: 'Paciente', entidadeId: p.id, resumo: `Abriu a ficha de ${p.nome}` })
-  const queixa = descriptografar(p.queixaCripto)
-  const observacoes = descriptografar(p.observacoesCripto)
+  const clinico = podeVerClinico(usuario)
+  const queixa = clinico ? descriptografar(p.queixaCripto) : null
+  const observacoes = clinico ? descriptografar(p.observacoesCripto) : null
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -80,12 +81,16 @@ export default async function FichaPaciente({ params }: { params: Promise<{ id: 
           </dl>
         </Cartao>
 
-        <Cartao titulo="🔒 Queixa inicial / demanda" className="lg:col-span-2">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-stone-800">{queixa || '—'}</p>
-        </Cartao>
-        <Cartao titulo="🔒 Observações gerais" className="lg:col-span-2">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-stone-800">{observacoes || '—'}</p>
-        </Cartao>
+        {clinico && (
+          <>
+            <Cartao titulo="🔒 Queixa inicial / demanda" className="lg:col-span-2">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-stone-800">{queixa || '—'}</p>
+            </Cartao>
+            <Cartao titulo="🔒 Observações gerais" className="lg:col-span-2">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-stone-800">{observacoes || '—'}</p>
+            </Cartao>
+          </>
+        )}
       </div>
 
       <p className="mt-6 text-xs text-stone-400">

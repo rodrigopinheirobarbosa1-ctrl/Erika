@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createHmac, randomBytes } from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import { db } from './db'
+import { gereUsuarios, veClinico, vePacientes, type Papel } from './permissoes'
 
 // Mesmo modelo de login do Mathima.
 const COOKIE = 'erika_sessao'
@@ -39,7 +40,7 @@ export type UsuarioLogado = {
   id: string
   nome: string
   email: string
-  papel: 'ADMIN' | 'ASSISTENTE'
+  papel: Papel
 }
 
 export async function hashSenha(senha: string): Promise<string> {
@@ -130,6 +131,35 @@ export async function exigirUsuarioAction(): Promise<UsuarioLogado> {
 export async function exigirAdminAction(): Promise<UsuarioLogado> {
   const usuario = await exigirUsuarioAction()
   if (usuario.papel !== 'ADMIN') throw new Error('Seu perfil não tem permissão para esta operação.')
+  return usuario
+}
+
+/** Telas de pacientes e pedidos de contato (psicóloga e secretária). */
+export async function exigirAcessoPacientes(): Promise<UsuarioLogado> {
+  const usuario = await exigirUsuario()
+  if (!vePacientes(usuario.papel)) redirect('/sistema')
+  return usuario
+}
+
+export async function exigirAcessoPacientesAction(): Promise<UsuarioLogado> {
+  const usuario = await exigirUsuarioAction()
+  if (!vePacientes(usuario.papel)) throw new Error('Seu perfil não tem acesso aos pacientes.')
+  return usuario
+}
+
+/** A pessoa logada pode ver os textos clínicos? */
+export const podeVerClinico = (u: UsuarioLogado) => veClinico(u.papel)
+
+/** Tela de usuários (psicóloga e suporte técnico). */
+export async function exigirGestorUsuarios(): Promise<UsuarioLogado> {
+  const usuario = await exigirUsuario()
+  if (!gereUsuarios(usuario.papel)) redirect('/sistema')
+  return usuario
+}
+
+export async function exigirGestorUsuariosAction(): Promise<UsuarioLogado> {
+  const usuario = await exigirUsuarioAction()
+  if (!gereUsuarios(usuario.papel)) throw new Error('Seu perfil não tem permissão para gerenciar usuários.')
   return usuario
 }
 

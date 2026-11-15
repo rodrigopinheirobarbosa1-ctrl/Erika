@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { exigirUsuario } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { Menu } from '@/components/menu'
+import { vePacientes } from '@/lib/permissoes'
 
 export const metadata: Metadata = { title: 'Consultório | Érika Dias', robots: { index: false, follow: false } }
 export const dynamic = 'force-dynamic'
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic'
 // Toda tela dentro deste grupo exige usuário autenticado.
 export default async function LayoutRestrito({ children }: { children: React.ReactNode }) {
   const usuario = await exigirUsuario()
-  const novosPedidos = await db.preCadastro.count({ where: { status: 'NOVO' } })
+  const novosPedidos = vePacientes(usuario.papel) ? await db.preCadastro.count({ where: { status: 'NOVO' } }) : 0
 
   return (
     <div className="flex min-h-screen flex-col bg-stone-50 lg:flex-row">

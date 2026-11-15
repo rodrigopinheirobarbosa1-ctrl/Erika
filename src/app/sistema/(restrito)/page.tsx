@@ -3,10 +3,22 @@ import { db } from '@/lib/db'
 import { exigirUsuario } from '@/lib/auth'
 import { formatarDataHora, formatarTelefone } from '@/lib/formatos'
 import { AREAS } from '@/lib/rotulos'
-import { Cabecalho, Cartao, Indicador, LinkBotao, Vazio } from '@/components/ui'
+import { Aviso, Cabecalho, Cartao, Indicador, LinkBotao, Vazio } from '@/components/ui'
+import { PAPEIS, vePacientes } from '@/lib/permissoes'
 
 export default async function Painel() {
   const usuario = await exigirUsuario()
+  if (!vePacientes(usuario.papel)) {
+    return (
+      <div className="mx-auto max-w-3xl">
+        <Cabecalho titulo={`Olá, ${usuario.nome.split(' ')[0]}`} descricao={PAPEIS[usuario.papel].nome} />
+        <Aviso>
+          Seu perfil cuida dos acessos ao sistema (menu <strong>Usuários</strong>). Os dados dos pacientes ficam visíveis só para a
+          psicóloga e a secretaria, por sigilo profissional.
+        </Aviso>
+      </div>
+    )
+  }
   const [novos, emContato, ativos, total, recentes] = await Promise.all([
     db.preCadastro.count({ where: { status: 'NOVO' } }),
     db.preCadastro.count({ where: { status: 'EM_CONTATO' } }),
