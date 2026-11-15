@@ -4,12 +4,13 @@ import Image from 'next/image'
 import Link from '@/components/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { PAPEIS, gereUsuarios, veHistorico, vePacientes, type Papel } from '@/lib/permissoes'
+import { PAPEIS, gereUsuarios, veAgenda, veHistorico, vePacientes, type Papel } from '@/lib/permissoes'
 
 type Item = { href: string; texto: string; pode?: (p: Papel) => boolean; contador?: boolean }
 
 const ITENS: Item[] = [
   { href: '/sistema', texto: 'Painel' },
+  { href: '/sistema/agenda', texto: 'Agenda', pode: veAgenda },
   { href: '/sistema/pre-cadastros', texto: 'Pedidos de contato', contador: true, pode: vePacientes },
   { href: '/sistema/pacientes', texto: 'Pacientes', pode: vePacientes },
   { href: '/sistema/usuarios', texto: 'Usuários', pode: gereUsuarios },

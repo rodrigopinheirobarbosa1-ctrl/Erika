@@ -16,6 +16,10 @@ dev: explicar passos em português, bem detalhados. Nada roda no computador dele
   (o usuário dono do app; vê tudo; só 1 ativo; a psicóloga vê aviso e pode desativar);
   ASSISTENTE = secretária, sem textos clínicos; SUPORTE = só usuários, não dá/edita
   perfis de acesso total. Sempre conferir permissão pelas funções de `permissoes.ts`.
+- Prontuário (`RegistroProntuario`): NUNCA update/delete; correção = novo registro
+  RETIFICACAO com `retificaId`. Só ADMIN (a psicóloga) escreve (`escreveProntuario`);
+  TOTAL lê. Agenda (`Atendimento`) guarda instante UTC; telas usam `src/lib/horario.ts`
+  (Brasília = UTC-3 fixo). `Atendimento.valorCentavos` é a base da Etapa 3 (financeiro).
 - Enums do Prisma: usar os nomes (`'PRESENCIAL'`), valores em CENTAVOS, datas de calendário à meia-noite UTC.
 - O repositório é PÚBLICO: nunca commitar dados reais, documentos ou chaves.
 - Divulgação de psicólogo (CFP): sempre mostrar nome + CRP; não usar depoimentos de

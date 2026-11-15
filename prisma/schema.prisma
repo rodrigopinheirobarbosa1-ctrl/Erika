@@ -179,8 +179,77 @@ model Paciente {
   observacoesCripto    String?
   consentimentoLgpdEm  DateTime?
   preCadastro          PreCadastro?
+  atendimentos         Atendimento[]
+  registros            RegistroProntuario[]
   criadoEm             DateTime         @default(now())
   atualizadoEm         DateTime         @updatedAt
 
   @@index([status, nome])
+}
+
+// ----------------------------------------------------------------------------
+// AGENDA E PRONTUÁRIO
+// ----------------------------------------------------------------------------
+
+enum StatusAtendimento {
+  AGENDADO
+  REALIZADO
+  FALTOU
+  DESMARCADO_PACIENTE
+  DESMARCADO_PSICOLOGA
+}
+
+/// Uma sessão na agenda. "inicio" é o instante exato (UTC); a tela mostra e
+/// lê no horário de Brasília.
+model Atendimento {
+  id                  String              @id @default(cuid())
+  pacienteId          String
+  paciente            Paciente            @relation(fields: [pacienteId], references: [id])
+  inicio              DateTime
+  duracaoMin          Int                 @default(50)
+  modalidade          Modalidade
+  status              StatusAtendimento   @default(AGENDADO)
+  /// Link da videochamada (atendimento online).
+  linkOnline          String?
+  /// Recado de agenda, NÃO clínico (ex.: "vem com o bebê").
+  recado              String?
+  /// Valor da sessão no momento do agendamento (centavos) — base do financeiro.
+  valorCentavos       Int?
+  /// Agendamentos criados juntos pelo "repetir toda semana".
+  serieId             String?
+  registros           RegistroProntuario[]
+  criadoEm            DateTime            @default(now())
+  atualizadoEm        DateTime            @updatedAt
+
+  @@index([inicio])
+  @@index([pacienteId, inicio])
+}
+
+enum TipoRegistro {
+  EVOLUCAO
+  ANOTACAO
+  RETIFICACAO
+}
+
+/// Registro do prontuário (Resolução CFP 001/2009). NUNCA é alterado nem
+/// apagado: uma correção é um novo registro RETIFICACAO apontando o original.
+model RegistroProntuario {
+  id            String              @id @default(cuid())
+  pacienteId    String
+  paciente      Paciente            @relation(fields: [pacienteId], references: [id])
+  atendimentoId String?
+  atendimento   Atendimento?        @relation(fields: [atendimentoId], references: [id])
+  tipo          TipoRegistro
+  /// Texto do registro (criptografado).
+  textoCripto   String
+  retificaId    String?
+  retifica      RegistroProntuario? @relation("Retificacoes", fields: [retificaId], references: [id])
+  retificacoes  RegistroProntuario[] @relation("Retificacoes")
+  autorId       String?
+  /// Congelado: continua certo mesmo se o usuário mudar de nome.
+  autorNome     String
+  criadoEm      DateTime            @default(now())
+
+  @@index([pacienteId, criadoEm])
+  @@index([atendimentoId])
 }

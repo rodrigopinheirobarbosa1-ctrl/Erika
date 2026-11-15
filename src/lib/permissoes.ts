@@ -27,6 +27,13 @@ export const acessoTotal = (p: Papel) => p === 'ADMIN' || p === 'TOTAL'
 export const vePacientes = (p: Papel) => acessoTotal(p) || p === 'ASSISTENTE'
 /** Queixa, motivo da procura, observações e anotações (criptografados). */
 export const veClinico = (p: Papel) => acessoTotal(p)
+/** Agenda (datas e horários, sem conteúdo clínico). */
+export const veAgenda = (p: Papel) => vePacientes(p)
+/**
+ * Escrever no prontuário é ato da psicóloga: só ela registra. O administrador
+ * do sistema lê (acesso total), mas não escreve.
+ */
+export const escreveProntuario = (p: Papel) => p === 'ADMIN'
 /** Histórico de acessos (cita nomes de pacientes). */
 export const veHistorico = (p: Papel) => acessoTotal(p)
 /** Tela de usuários. */

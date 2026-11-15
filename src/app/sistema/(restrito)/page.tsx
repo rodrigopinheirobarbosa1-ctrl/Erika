@@ -2,8 +2,9 @@ import Link from '@/components/link'
 import { db } from '@/lib/db'
 import { exigirUsuario } from '@/lib/auth'
 import { formatarDataHora, formatarTelefone } from '@/lib/formatos'
-import { AREAS } from '@/lib/rotulos'
-import { Aviso, Cabecalho, Cartao, Indicador, LinkBotao, Vazio } from '@/components/ui'
+import { AREAS, MODALIDADES_CURTAS, STATUS_ATENDIMENTO, TOM_ATENDIMENTO } from '@/lib/rotulos'
+import { hojeLocal, localParaUtc, somarDias, utcParaLocal } from '@/lib/horario'
+import { Aviso, Cabecalho, Cartao, Etiqueta, Indicador, LinkBotao, Vazio } from '@/components/ui'
 import { PAPEIS, vePacientes } from '@/lib/permissoes'
 
 export default async function Painel() {
@@ -19,12 +20,18 @@ export default async function Painel() {
       </div>
     )
   }
-  const [novos, emContato, ativos, total, recentes] = await Promise.all([
+  const hoje = hojeLocal()
+  const [novos, emContato, ativos, total, recentes, sessoesHoje] = await Promise.all([
     db.preCadastro.count({ where: { status: 'NOVO' } }),
     db.preCadastro.count({ where: { status: 'EM_CONTATO' } }),
     db.paciente.count({ where: { status: 'ATIVO' } }),
     db.paciente.count(),
     db.preCadastro.findMany({ where: { status: { in: ['NOVO', 'EM_CONTATO'] } }, orderBy: { criadoEm: 'desc' }, take: 5 }),
+    db.atendimento.findMany({
+      where: { inicio: { gte: localParaUtc(hoje, '00:00')!, lt: localParaUtc(somarDias(hoje, 1), '00:00')! } },
+      include: { paciente: { select: { nome: true, nomeSocial: true } } },
+      orderBy: { inicio: 'asc' },
+    }),
   ])
   const hora = Number(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo', hour: 'numeric', hour12: false }))
   const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite'
@@ -42,6 +49,33 @@ export default async function Painel() {
         <Indicador titulo="Em atendimento" valor={ativos} href="/sistema/pacientes" />
         <Indicador titulo="Pacientes cadastrados" valor={total} href="/sistema/pacientes?situacao=TODOS" />
       </div>
+
+      <Cartao
+        titulo={`Sessões de hoje (${sessoesHoje.filter((s) => s.status === 'AGENDADO' || s.status === 'REALIZADO').length})`}
+        className="mt-6"
+        acao={<Link href="/sistema/agenda" className="text-sm text-marca-700 hover:underline">Ver agenda</Link>}
+      >
+        {sessoesHoje.length === 0 ? (
+          <Vazio texto="Nenhuma sessão hoje." />
+        ) : (
+          <ul className="-my-2 divide-y divide-stone-100">
+            {sessoesHoje.map((s) => (
+              <li key={s.id}>
+                <Link href={`/sistema/agenda/${s.id}`} className="-mx-2 flex items-center justify-between gap-2 rounded-lg px-2 py-2.5 hover:bg-marca-50">
+                  <span className="flex items-baseline gap-3">
+                    <span className="w-12 font-semibold tabular-nums text-cacau">{utcParaLocal(s.inicio).hora}</span>
+                    <span>
+                      <span className="block text-stone-800">{s.paciente.nomeSocial || s.paciente.nome}</span>
+                      <span className="block text-xs text-stone-500">{MODALIDADES_CURTAS[s.modalidade]}</span>
+                    </span>
+                  </span>
+                  <Etiqueta tom={TOM_ATENDIMENTO[s.status]}>{STATUS_ATENDIMENTO[s.status]}</Etiqueta>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Cartao>
 
       <Cartao titulo="Pedidos de contato em aberto" className="mt-6" acao={<Link href="/sistema/pre-cadastros" className="text-sm text-marca-700 hover:underline">Ver todos</Link>}>
         {recentes.length === 0 ? (

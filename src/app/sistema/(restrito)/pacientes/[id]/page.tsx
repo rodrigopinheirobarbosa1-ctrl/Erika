@@ -4,8 +4,12 @@ import { exigirAcessoPacientes, podeVerClinico } from '@/lib/auth'
 import { auditar } from '@/lib/audit'
 import { descriptografar } from '@/lib/cripto'
 import { formatarCpf, formatarData, formatarDataHora, formatarReais, formatarTelefone, idade, linkWhatsapp } from '@/lib/formatos'
-import { AREAS, MODALIDADES, STATUS_PACIENTE } from '@/lib/rotulos'
-import { Aviso, Cabecalho, Cartao, Dado, LinkBotao } from '@/components/ui'
+import { AREAS, MODALIDADES, MODALIDADES_CURTAS, STATUS_ATENDIMENTO, STATUS_PACIENTE, TOM_ATENDIMENTO } from '@/lib/rotulos'
+import { rotuloInstante } from '@/lib/horario'
+import { escreveProntuario } from '@/lib/permissoes'
+import Link from '@/components/link'
+import { LinhaDoTempo, NovoRegistro } from '@/components/prontuario'
+import { Aviso, Cabecalho, Cartao, Dado, Etiqueta, LinkBotao } from '@/components/ui'
 
 export default async function FichaPaciente({ params }: { params: Promise<{ id: string }> }) {
   const usuario = await exigirAcessoPacientes()
@@ -17,6 +21,21 @@ export default async function FichaPaciente({ params }: { params: Promise<{ id: 
   const clinico = podeVerClinico(usuario)
   const queixa = clinico ? descriptografar(p.queixaCripto) : null
   const observacoes = clinico ? descriptografar(p.observacoesCripto) : null
+  const agora = new Date()
+  const [proximas, anteriores, totais, registros] = await Promise.all([
+    db.atendimento.findMany({ where: { pacienteId: p.id, inicio: { gte: agora } }, orderBy: { inicio: 'asc' }, take: 6 }),
+    db.atendimento.findMany({ where: { pacienteId: p.id, inicio: { lt: agora } }, orderBy: { inicio: 'desc' }, take: 10 }),
+    db.atendimento.groupBy({ by: ['status'], where: { pacienteId: p.id, inicio: { lt: agora } }, _count: true }),
+    clinico
+      ? db.registroProntuario.findMany({
+          where: { pacienteId: p.id },
+          orderBy: { criadoEm: 'desc' },
+          include: { atendimento: { select: { id: true, inicio: true } } },
+        })
+      : Promise.resolve([]),
+  ])
+  const conta = (s: string) => totais.find((t) => t.status === s)?._count ?? 0
+  const podeEscrever = escreveProntuario(usuario.papel)
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -91,11 +110,66 @@ export default async function FichaPaciente({ params }: { params: Promise<{ id: 
             </Cartao>
           </>
         )}
+
+        <Cartao
+          titulo="Sessões"
+          className="lg:col-span-2"
+          acao={<LinkBotao href={`/sistema/agenda/novo?paciente=${p.id}`}>+ Agendar</LinkBotao>}
+        >
+          <p className="mb-3 text-xs text-stone-500">
+            Até hoje: {conta('REALIZADO')} realizada(s) · {conta('FALTOU')} falta(s) · {conta('DESMARCADO_PACIENTE') + conta('DESMARCADO_PSICOLOGA')} desmarcada(s)
+          </p>
+          {[
+            ['Próximas', proximas],
+            ['Anteriores (últimas 10)', anteriores],
+          ].map(([rotulo, lista]) => (
+            <div key={rotulo as string} className="mb-3">
+              <p className="rotulo">{rotulo as string}</p>
+              {(lista as typeof proximas).length === 0 ? (
+                <p className="text-sm text-stone-400">Nenhuma.</p>
+              ) : (
+                <ul className="divide-y divide-stone-100">
+                  {(lista as typeof proximas).map((a) => (
+                    <li key={a.id}>
+                      <Link href={`/sistema/agenda/${a.id}`} className="-mx-2 flex items-center justify-between gap-2 rounded-lg px-2 py-2 text-sm hover:bg-marca-50">
+                        <span>
+                          {rotuloInstante(a.inicio)} <span className="text-stone-400">· {MODALIDADES_CURTAS[a.modalidade]}</span>
+                        </span>
+                        <Etiqueta tom={TOM_ATENDIMENTO[a.status]}>{STATUS_ATENDIMENTO[a.status]}</Etiqueta>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </Cartao>
+
+        {clinico && (
+          <Cartao
+            titulo="🔒 Prontuário"
+            className="lg:col-span-2"
+            acao={<LinkBotao href={`/sistema/pacientes/${p.id}/prontuario`}>Imprimir / PDF</LinkBotao>}
+          >
+            {podeEscrever && (
+              <details className="mb-4">
+                <summary className="cursor-pointer text-sm font-medium text-marca-700">+ Nova anotação (fora de sessão)</summary>
+                <div className="mt-3">
+                  <NovoRegistro pacienteId={p.id} titulo="Anotação" />
+                </div>
+              </details>
+            )}
+            <p className="mb-3 text-xs text-stone-500">
+              A evolução de cada sessão é registrada na própria sessão (Agenda → sessão). Mais recentes primeiro.
+              {!podeEscrever && ' Seu perfil lê o prontuário, mas só a psicóloga registra.'}
+            </p>
+            <LinhaDoTempo registros={registros} pacienteId={p.id} podeEscrever={podeEscrever} />
+          </Cartao>
+        )}
       </div>
 
       <p className="mt-6 text-xs text-stone-400">
-        Cadastrado em {formatarDataHora(p.criadoEm)} · última alteração em {formatarDataHora(p.atualizadoEm)}. Sessões, prontuário e
-        pagamentos chegam nas próximas etapas.
+        Cadastrado em {formatarDataHora(p.criadoEm)} · última alteração em {formatarDataHora(p.atualizadoEm)}.
       </p>
     </div>
   )
