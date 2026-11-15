@@ -35,6 +35,7 @@ const esquema = z.object({
   dataReferenciaBebe: texto(10),
   comoConheceu: texto(160),
   valorSessao: texto(20),
+  salaVideo: z.preprocess((v) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : null), z.string().url('Link da sala de videochamada inválido (comece com https://).').max(500).nullable()),
   status: z.enum(['ATIVO', 'PAUSADO', 'ALTA', 'INATIVO']).default('ATIVO'),
   inicioAtendimento: texto(10),
   queixa: texto(10000),
@@ -88,6 +89,7 @@ export async function salvarPaciente(id: string | null, _e: EstadoForm, dados: F
     dataReferenciaBebe: datas.dataReferenciaBebe ?? null,
     comoConheceu: d.comoConheceu,
     valorSessaoCentavos,
+    salaVideo: d.salaVideo,
     status: d.status,
     inicioAtendimento: datas.inicioAtendimento ?? null,
     // Textos clínicos: só a psicóloga grava. Para os outros perfis, ficam como estão.

@@ -68,6 +68,14 @@ export function FormularioPaciente({ id, p, clinico }: { id: string | null; p: D
         />
         <Texto rotulo="Valor por sessão (R$)" nome="valorSessao" valor={valor} modo="decimal" placeholder="150,00" />
         <Texto rotulo="Como conheceu o trabalho" nome="comoConheceu" valor={p.comoConheceu} className="sm:col-span-2" />
+        <Texto
+          rotulo="Sala de videochamada do paciente"
+          nome="salaVideo"
+          valor={p.salaVideo}
+          placeholder="https://…"
+          dica="Vazio = o sistema cria uma sala Jitsi na primeira sessão online. Pode colar um link fixo do Meet ou Zoom."
+          className="sm:col-span-2"
+        />
       </Bloco>
 
       {clinico && (

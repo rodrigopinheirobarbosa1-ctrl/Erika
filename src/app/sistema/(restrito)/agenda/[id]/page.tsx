@@ -15,6 +15,8 @@ import { Caixa, Selecao, Texto } from '@/components/campos'
 import { LinhaDoTempo, NovoRegistro } from '@/components/prontuario'
 import { alterarAtendimento, excluirAgendamento, mudarStatus } from '../actions'
 import { MensagensSessao } from '@/components/mensagens'
+import { linkDaSessao } from '@/lib/video'
+import { CopiarTexto } from '@/components/copiar-texto'
 
 const RAPIDOS: { status: StatusAtendimento; texto: string }[] = [
   { status: 'REALIZADO', texto: 'Realizado' },
@@ -70,10 +72,14 @@ export default async function Sessao({ params, searchParams }: { params: Promise
             </Dado>
             {a.modalidade === 'ONLINE' && (
               <Dado rotulo="Videochamada">
-                {a.linkOnline ? (
-                  <a href={a.linkOnline} target="_blank" rel="noopener noreferrer" className="text-marca-700 underline">
-                    Abrir link
-                  </a>
+                {linkDaSessao(a.linkOnline, p.salaVideo) ? (
+                  <span className="flex flex-wrap items-center gap-2">
+                    <a href={linkDaSessao(a.linkOnline, p.salaVideo)!} target="_blank" rel="noopener noreferrer" className="btn-primario">
+                      Entrar na sala
+                    </a>
+                    <CopiarTexto texto={linkDaSessao(a.linkOnline, p.salaVideo)!} rotulo="Copiar link" />
+                    <span className="block w-full text-xs text-stone-500">{a.linkOnline ? 'Link próprio desta sessão' : 'Sala fixa do paciente'}</span>
+                  </span>
                 ) : (
                   'Sem link cadastrado'
                 )}
@@ -170,7 +176,7 @@ export default async function Sessao({ params, searchParams }: { params: Promise
             <Texto rotulo="Duração (minutos)" nome="duracaoMin" tipo="number" valor={a.duracaoMin} modo="numeric" obrigatorio />
             <Selecao rotulo="Modalidade" nome="modalidade" valor={a.modalidade} opcoes={Object.entries(MODALIDADES).map(([valor, texto]) => ({ valor, texto }))} />
             <Selecao rotulo="Situação" nome="status" valor={a.status} opcoes={Object.entries(STATUS_ATENDIMENTO).map(([valor, texto]) => ({ valor, texto }))} />
-            <Texto rotulo="Link da videochamada" nome="linkOnline" valor={a.linkOnline} />
+            <Texto rotulo="Link da videochamada" nome="linkOnline" valor={a.linkOnline} dica="Vazio = usa a sala fixa do paciente." />
             <Texto
               rotulo="Valor desta sessão (R$)"
               nome="valor"

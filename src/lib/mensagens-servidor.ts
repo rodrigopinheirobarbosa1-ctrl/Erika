@@ -2,6 +2,7 @@ import 'server-only'
 import { db } from './db'
 import { lembretesPendentes, preencher, TEXTOS_PADRAO } from './mensagens'
 import { site } from './site'
+import { linkDaSessao } from './video'
 
 /**
  * Na primeira vez, cria a confirmação e os lembretes de 1 dia e 1 hora.
@@ -32,11 +33,11 @@ type SessaoMsg = {
   modalidade: 'PRESENCIAL' | 'ONLINE' | 'DOMICILIO'
   linkOnline: string | null
   serieId: string | null
-  paciente: { nome: string; nomeSocial: string | null; endereco: string | null; cidade: string | null; telefone: string | null }
+  paciente: { nome: string; nomeSocial: string | null; endereco: string | null; cidade: string | null; telefone: string | null; salaVideo: string | null }
 }
 
 export function textoPara(texto: string, s: SessaoMsg) {
-  return preencher(texto, { ...s, serie: !!s.serieId }, site.enderecoConsultorio)
+  return preencher(texto, { ...s, linkOnline: linkDaSessao(s.linkOnline, s.paciente.salaVideo), serie: !!s.serieId }, site.enderecoConsultorio)
 }
 
 /** Lembretes para enviar agora, já com o texto pronto. */
@@ -47,7 +48,7 @@ export async function lembretesAgora() {
   const agora = new Date()
   const sessoes = await db.atendimento.findMany({
     where: { status: 'AGENDADO', inicio: { gt: agora, lte: new Date(agora.getTime() + maior * 60000) } },
-    include: { paciente: { select: { nome: true, nomeSocial: true, endereco: true, cidade: true, telefone: true } }, envios: { select: { modeloId: true } } },
+    include: { paciente: { select: { nome: true, nomeSocial: true, endereco: true, cidade: true, telefone: true, salaVideo: true } }, envios: { select: { modeloId: true } } },
     orderBy: { inicio: 'asc' },
   })
   const enviados = new Set(sessoes.flatMap((s) => s.envios.map((e) => `${s.id}|${e.modeloId}`)))

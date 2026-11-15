@@ -34,6 +34,10 @@ dev: explicar passos em português, bem detalhados. Nada roda no computador dele
   wa.me), não automático — decisão do usuário; automático exigiria API oficial do
   WhatsApp Business + cron frequente. Modelos padrão com ids fixos (`garantirModelos`).
   `lembretesPendentes` mostra só o lembrete mais próximo de cada sessão.
+- Videochamada: sala FIXA por paciente (`Paciente.salaVideo`), criada sozinha (Jitsi,
+  `src/lib/video.ts`, nome aleatório sem dados do paciente) na 1ª sessão online.
+  `Atendimento.linkOnline` só quando a sessão tem link próprio; exibir sempre via
+  `linkDaSessao(linkOnline, salaVideo)`.
 - Enums do Prisma: usar os nomes (`'PRESENCIAL'`), valores em CENTAVOS, datas de calendário à meia-noite UTC.
 - O repositório é PÚBLICO: nunca commitar dados reais, documentos ou chaves.
 - Divulgação de psicólogo (CFP): sempre mostrar nome + CRP; não usar depoimentos de

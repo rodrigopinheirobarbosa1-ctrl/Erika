@@ -42,7 +42,13 @@ export default async function NovoAgendamento({ searchParams }: { searchParams: 
             </label>
             <Texto rotulo="Duração (minutos)" nome="duracaoMin" tipo="number" valor={50} modo="numeric" obrigatorio />
             <Selecao rotulo="Modalidade" nome="modalidade" vazio="A do cadastro do paciente" opcoes={Object.entries(MODALIDADES).map(([valor, texto]) => ({ valor, texto }))} />
-            <Texto rotulo="Link da videochamada (se online)" nome="linkOnline" placeholder="https://meet.google.com/…" className="sm:col-span-2" />
+            <Texto
+              rotulo="Link da videochamada (opcional)"
+              nome="linkOnline"
+              placeholder="https://…"
+              dica="Vazio = usa a sala fixa do paciente (criada sozinha na primeira sessão online)."
+              className="sm:col-span-2"
+            />
             <Texto rotulo="Recado de agenda (não clínico)" nome="recado" placeholder="Ex.: vem com o bebê" maximo={300} className="sm:col-span-2" />
             <Selecao
               rotulo="Repetir toda semana"

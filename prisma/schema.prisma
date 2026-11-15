@@ -172,6 +172,8 @@ model Paciente {
   comoConheceu         String?
   /// Valor combinado por sessão (centavos) — usado no financeiro.
   valorSessaoCentavos  Int?
+  /// Sala de videochamada fixa do paciente (todas as sessões online usam).
+  salaVideo            String?
   status               StatusPaciente   @default(ATIVO)
   inicioAtendimento    DateTime?
   /// Queixa inicial / demanda (criptografado).

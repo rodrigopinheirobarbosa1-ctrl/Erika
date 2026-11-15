@@ -11,6 +11,9 @@ import Link from '@/components/link'
 import { LinhaDoTempo, NovoRegistro } from '@/components/prontuario'
 import { FinanceiroPaciente } from '@/components/financeiro-paciente'
 import { FichasAnamnese } from '@/components/fichas-anamnese'
+import { CopiarTexto } from '@/components/copiar-texto'
+import { BotaoEnviar, Formulario } from '@/components/form'
+import { criarSalaPaciente } from '../../agenda/actions'
 import { Aviso, Cabecalho, Cartao, Dado, Etiqueta, LinkBotao } from '@/components/ui'
 
 export default async function FichaPaciente({ params }: { params: Promise<{ id: string }> }) {
@@ -104,6 +107,23 @@ export default async function FichaPaciente({ params }: { params: Promise<{ id: 
             </Dado>
             <Dado rotulo="Valor por sessão">{p.valorSessaoCentavos != null ? formatarReais(p.valorSessaoCentavos) : ''}</Dado>
             <Dado rotulo="Como conheceu">{p.comoConheceu}</Dado>
+            <div className="sm:col-span-2">
+              <Dado rotulo="Sala de videochamada">
+                {p.salaVideo ? (
+                  <span className="flex flex-wrap items-center gap-2">
+                    <a href={p.salaVideo} target="_blank" rel="noopener noreferrer" className="break-all text-marca-700 underline">
+                      {p.salaVideo}
+                    </a>
+                    <CopiarTexto texto={p.salaVideo} rotulo="Copiar" />
+                  </span>
+                ) : (
+                  <Formulario action={criarSalaPaciente.bind(null, p.id)} className="flex flex-wrap items-center gap-2">
+                    <span className="text-stone-500">Ainda não tem (é criada na primeira sessão online).</span>
+                    <BotaoEnviar variante="secundario">Criar sala agora</BotaoEnviar>
+                  </Formulario>
+                )}
+              </Dado>
+            </div>
             <Dado rotulo="Consentimento LGPD">{p.consentimentoLgpdEm ? formatarDataHora(p.consentimentoLgpdEm) : 'Não registrado'}</Dado>
           </dl>
         </Cartao>

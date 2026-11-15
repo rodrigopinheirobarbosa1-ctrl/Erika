@@ -13,7 +13,7 @@ export async function MensagensSessao({ atendimentoId, destaque }: { atendimento
     modelosAtivos(),
     db.atendimento.findUnique({
       where: { id: atendimentoId },
-      include: { paciente: { select: { nome: true, nomeSocial: true, endereco: true, cidade: true, telefone: true } }, envios: true },
+      include: { paciente: { select: { nome: true, nomeSocial: true, endereco: true, cidade: true, telefone: true, salaVideo: true } }, envios: true },
     }),
   ])
   if (!s) return null
@@ -34,7 +34,7 @@ export async function MensagensSessao({ atendimentoId, destaque }: { atendimento
           </Aviso>
         </div>
       )}
-      {s.modalidade === 'ONLINE' && !s.linkOnline && (
+      {s.modalidade === 'ONLINE' && !s.linkOnline && !s.paciente.salaVideo && (
         <p className="mb-3 text-xs text-amber-800">Sessão online sem link da videochamada — preencha em “Remarcar ou alterar” para ele ir na mensagem.</p>
       )}
       <ul className="divide-y divide-stone-100">

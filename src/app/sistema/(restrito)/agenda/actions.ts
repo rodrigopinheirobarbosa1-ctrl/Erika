@@ -11,7 +11,13 @@ import { auditar } from '@/lib/audit'
 import { localParaUtc, rotuloInstante, segundaDaSemana, sobrepoe, utcParaLocal } from '@/lib/horario'
 import { STATUS_ATENDIMENTO } from '@/lib/rotulos'
 import { lerReais } from '@/lib/formatos'
+import { novaSalaJitsi } from '@/lib/video'
 import type { EstadoForm } from '@/components/form'
+
+/** Sessão online: o paciente precisa ter a sala fixa dele (cria na primeira vez). */
+async function garantirSala(pacienteId: string) {
+  await db.paciente.updateMany({ where: { id: pacienteId, salaVideo: null }, data: { salaVideo: novaSalaJitsi() } })
+}
 
 const vazioNulo = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? null : v)
 
@@ -64,6 +70,7 @@ export async function agendar(_e: EstadoForm, dados: FormData): Promise<EstadoFo
   if (choques.length > 0 && dados.get('ignorarConflito') !== 'on') return { erro: textoConflitos(choques) }
 
   const modalidade = d.modalidade ?? paciente.modalidade ?? 'PRESENCIAL'
+  if (modalidade === 'ONLINE' && !d.linkOnline) await garantirSala(paciente.id)
   const serieId = horarios.length > 1 ? randomUUID() : null
   await db.atendimento.createMany({
     data: horarios.map((inicio) => ({
@@ -112,6 +119,7 @@ export async function alterarAtendimento(id: string, _e: EstadoForm, dados: Form
     if (choques.length > 0 && dados.get('ignorarConflito') !== 'on') return { erro: textoConflitos(choques) }
   }
 
+  if ((d.modalidade ?? atual.modalidade) === 'ONLINE' && !d.linkOnline) await garantirSala(atual.pacienteId)
   await db.atendimento.update({
     where: { id },
     data: { inicio, duracaoMin: d.duracaoMin, modalidade: d.modalidade ?? atual.modalidade, linkOnline: d.linkOnline, recado: d.recado, status: d.status, valorCentavos, cobrarFalta },
@@ -170,4 +178,16 @@ export async function excluirAgendamento(id: string, _e: EstadoForm, _dados: For
   await auditar({ usuario, acao: 'ALTERAR', entidade: 'Atendimento', entidadeId: id, resumo: `Excluiu o agendamento de ${atual.paciente.nome} em ${rotuloInstante(atual.inicio)} (feito por engano)` })
   revalidatePath('/sistema', 'layout')
   redirect(`/sistema/agenda?semana=${segundaDaSemana(utcParaLocal(atual.inicio).data)}`)
+}
+
+/** Botão "Criar sala" na ficha do paciente. */
+export async function criarSalaPaciente(pacienteId: string, _e: EstadoForm, _d: FormData): Promise<EstadoForm> {
+  const usuario = await exigirAcessoPacientesAction()
+  const p = await db.paciente.findUnique({ where: { id: pacienteId }, select: { nome: true, salaVideo: true } })
+  if (!p) return { erro: 'Paciente não encontrado.' }
+  if (p.salaVideo) return { ok: 'O paciente já tem sala.' }
+  await garantirSala(pacienteId)
+  await auditar({ usuario, acao: 'ALTERAR', entidade: 'Paciente', entidadeId: pacienteId, resumo: `Criou a sala de videochamada de ${p.nome}` })
+  revalidatePath('/sistema', 'layout')
+  return { ok: 'Sala criada.' }
 }
