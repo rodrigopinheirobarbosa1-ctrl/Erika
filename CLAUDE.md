@@ -1,7 +1,11 @@
 # Site/sistema da Érika Dias (psicóloga) — instruções para o Claude
 
-Mesma estrutura do Trip (`rodrigopinheirobarbosa1-ctrl/Trip`): Next.js 16 (App Router,
-server actions) + Prisma 6 + PostgreSQL (Neon) na Vercel (região gru1). O usuário não é
+Estrutura dos apps do usuário (Next.js 16 App Router + server actions + Prisma 6 +
+PostgreSQL/Neon na Vercel, região gru1). **Referência preferida: Mathima**
+(`rodrigopinheirobarbosa1-ctrl/Mathima`) — o usuário confia menos no Trip. Login segue o
+Mathima: id da sessão = HMAC(SESSION_SECRET), tentativas no banco (`TentativaLogin`).
+Diferença consciente: aqui o primeiro acesso é pela web (nada roda no computador do
+usuário), protegido pela SESSION_SECRET. O usuário não é
 dev: explicar passos em português, bem detalhados. Nada roda no computador dele.
 
 - Dados de saúde (LGPD art. 11): campos `*Cripto` no schema SEMPRE passam por

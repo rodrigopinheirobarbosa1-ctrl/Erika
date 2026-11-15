@@ -16,6 +16,18 @@ if (!env.DATABASE_URL) {
   )
   process.exit(1)
 }
+const sessao = env.SESSION_SECRET ?? ''
+if (sessao.length < 32 || sessao.startsWith('troque-por')) {
+  console.error(
+    '\n*** Falta a SESSION_SECRET (uma frase com 32 caracteres ou mais). ***\n' +
+      'Na Vercel: Settings > Environment Variables > Add. Veja o passo a passo no README.\n',
+  )
+  process.exit(1)
+}
+if (sessao === env.CHAVE_CRIPTOGRAFIA) {
+  console.error('\n*** SESSION_SECRET e CHAVE_CRIPTOGRAFIA precisam ser frases DIFERENTES. ***\n')
+  process.exit(1)
+}
 const chave = env.CHAVE_CRIPTOGRAFIA ?? ''
 if (chave.length < 32 || chave.startsWith('troque-por')) {
   console.error(

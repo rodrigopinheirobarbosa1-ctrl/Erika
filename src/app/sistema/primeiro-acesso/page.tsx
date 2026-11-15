@@ -25,6 +25,13 @@ export default async function PrimeiroAcesso() {
             <Texto rotulo="E-mail" nome="email" tipo="email" obrigatorio />
             <Texto rotulo="Senha" nome="senha" tipo="password" obrigatorio dica="Pelo menos 10 caracteres." />
             <Texto rotulo="Repita a senha" nome="confirmacao" tipo="password" obrigatorio />
+            <Texto
+              rotulo="Chave de instalação"
+              nome="chaveInstalacao"
+              tipo="password"
+              obrigatorio
+              dica="É a frase cadastrada como SESSION_SECRET na Vercel. Protege esta tela de estranhos."
+            />
             <BotaoEnviar>Criar acesso</BotaoEnviar>
           </Formulario>
         </div>

@@ -44,6 +44,8 @@ model Usuario {
   sessoes      Sessao[]
 }
 
+/// O id é uma "impressão digital" (HMAC com SESSION_SECRET) do código que fica
+/// no cookie: quem ler esta tabela não consegue montar um cookie válido.
 model Sessao {
   id        String   @id
   usuarioId String
@@ -53,6 +55,18 @@ model Sessao {
   criadoEm  DateTime @default(now())
 
   @@index([usuarioId])
+  @@index([expiraEm])
+}
+
+/// Tentativas de login erradas (no banco: na Vercel cada acesso pode cair numa
+/// cópia diferente do servidor, e um contador em memória recomeçaria do zero).
+model TentativaLogin {
+  // "endereco|email", "*|email" ou "pre-cadastro|endereco"
+  chave      String   @id
+  erros      Int
+  primeiraEm DateTime
+
+  @@index([primeiraEm])
 }
 
 /// Quem fez o quê e quando (inclusive quem abriu a ficha de um paciente).

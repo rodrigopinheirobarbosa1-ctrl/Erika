@@ -5,8 +5,12 @@ import { z } from 'zod'
 import { db } from '@/lib/db'
 import { criptografar } from '@/lib/cripto'
 import { soDigitos } from '@/lib/formatos'
+import { ipDaRequisicao } from '@/lib/auth'
 import { minutosDeBloqueio, registrarErro } from '@/lib/limite-tentativas'
 import type { EstadoForm } from '@/components/form'
+
+/** Pedidos de contato aceitos do mesmo endereço em 15 minutos (contra spam). */
+const MAXIMO_ENVIOS = 5
 
 const vazioParaNulo = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v)
 
@@ -29,9 +33,9 @@ export async function enviarPreCadastro(_e: EstadoForm, dados: FormData): Promis
   // Campo invisível: pessoas não preenchem, robôs de spam sim.
   if (String(dados.get('site') ?? '') !== '') return { ok: 'Recebido! Em breve entraremos em contato.' }
 
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'local'
+  const ip = ipDaRequisicao(await headers()) ?? 'local'
   const chave = `pre-cadastro|${ip}`
-  if (minutosDeBloqueio(chave) > 0) {
+  if ((await minutosDeBloqueio(chave, MAXIMO_ENVIOS)) > 0) {
     return { erro: 'Recebemos vários envios seguidos deste aparelho. Aguarde alguns minutos e tente de novo.' }
   }
 
@@ -52,7 +56,7 @@ export async function enviarPreCadastro(_e: EstadoForm, dados: FormData): Promis
       ip,
     },
   })
-  registrarErro(chave) // conta o envio no limite de envios por aparelho
+  await registrarErro(chave) // conta o envio no limite de envios por aparelho
 
   return { ok: `Obrigada, ${d.nome.split(' ')[0]}! Recebi seu contato e retorno em breve pelo telefone informado.` }
 }
