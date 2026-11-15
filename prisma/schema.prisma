@@ -1,0 +1,166 @@
+// =============================================================================
+// Érika Dias · Psicóloga — site e sistema de consultório
+// Modelo de dados
+//
+// Princípios:
+//  - Dados de saúde (LGPD, art. 11): textos clínicos/sensíveis são gravados
+//    CRIPTOGRAFADOS (campos terminados em "Cripto"), com a chave
+//    CHAVE_CRIPTOGRAFIA. Quem tiver só o banco não consegue lê-los.
+//  - Nada de paciente é apagado: o registro documental de psicologia precisa
+//    ser guardado por pelo menos 5 anos (Resolução CFP 001/2009). Paciente
+//    que encerrou o acompanhamento vira "ALTA"/"INATIVO", não some.
+//  - Valores em dinheiro são inteiros em CENTAVOS (sem erro de arredondamento).
+//  - Datas "de calendário" (nascimento) ficam à meia-noite UTC.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ----------------------------------------------------------------------------
+// ACESSO
+// ----------------------------------------------------------------------------
+
+enum Papel {
+  ADMIN
+  ASSISTENTE
+}
+
+model Usuario {
+  id           String    @id @default(cuid())
+  nome         String
+  email        String    @unique
+  senhaHash    String
+  papel        Papel     @default(ASSISTENTE)
+  ativo        Boolean   @default(true)
+  ultimoAcesso DateTime?
+  criadoEm     DateTime  @default(now())
+  sessoes      Sessao[]
+}
+
+model Sessao {
+  id        String   @id
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  expiraEm  DateTime
+  ip        String?
+  criadoEm  DateTime @default(now())
+
+  @@index([usuarioId])
+}
+
+/// Quem fez o quê e quando (inclusive quem abriu a ficha de um paciente).
+model Auditoria {
+  id          String   @id @default(cuid())
+  usuarioId   String?
+  usuarioNome String
+  acao        String // CRIAR, ALTERAR, VISUALIZAR, LOGIN, ...
+  entidade    String
+  entidadeId  String?
+  resumo      String
+  criadoEm    DateTime @default(now())
+
+  @@index([criadoEm])
+  @@index([entidade, entidadeId])
+}
+
+// ----------------------------------------------------------------------------
+// PACIENTES
+// ----------------------------------------------------------------------------
+
+enum Modalidade {
+  PRESENCIAL
+  ONLINE
+  DOMICILIO
+}
+
+enum AreaAtendimento {
+  GESTACAO
+  PUERPERIO
+  PARENTALIDADE
+  SAUDE_MENTAL
+  OUTRO
+}
+
+enum StatusPreCadastro {
+  NOVO
+  EM_CONTATO
+  CONVERTIDO
+  DESCARTADO
+}
+
+/// Pedido de contato enviado pelo formulário do site (antes de virar paciente).
+model PreCadastro {
+  id               String            @id @default(cuid())
+  nome             String
+  telefone         String
+  email            String?
+  modalidade       Modalidade?
+  area             AreaAtendimento?
+  melhorHorario    String?
+  /// O que a pessoa escreveu sobre o motivo da procura (criptografado).
+  motivoCripto     String?
+  consentimentoEm  DateTime
+  status           StatusPreCadastro @default(NOVO)
+  observacaoCripto String?
+  pacienteId       String?           @unique
+  paciente         Paciente?         @relation(fields: [pacienteId], references: [id])
+  ip               String?
+  criadoEm         DateTime          @default(now())
+  atualizadoEm     DateTime          @updatedAt
+
+  @@index([status, criadoEm])
+}
+
+enum StatusPaciente {
+  ATIVO
+  PAUSADO
+  ALTA
+  INATIVO
+}
+
+model Paciente {
+  id                   String           @id @default(cuid())
+  nome                 String
+  nomeSocial           String?
+  dataNascimento       DateTime?
+  cpf                  String?
+  telefone             String?
+  email                String?
+  /// Endereço (necessário para atendimento em domicílio).
+  endereco             String?
+  cidade               String?
+  profissao            String?
+  estadoCivil          String?
+  contatoEmergencia    String?
+  telefoneEmergencia   String?
+  /// Responsável legal (paciente menor de idade).
+  responsavelNome      String?
+  responsavelCpf       String?
+  responsavelTelefone  String?
+  modalidade           Modalidade?
+  area                 AreaAtendimento?
+  /// Gestação: data provável do parto. Puerpério: data do nascimento do bebê.
+  dataReferenciaBebe   DateTime?
+  comoConheceu         String?
+  /// Valor combinado por sessão (centavos) — usado no financeiro.
+  valorSessaoCentavos  Int?
+  status               StatusPaciente   @default(ATIVO)
+  inicioAtendimento    DateTime?
+  /// Queixa inicial / demanda (criptografado).
+  queixaCripto         String?
+  /// Observações gerais (criptografado).
+  observacoesCripto    String?
+  consentimentoLgpdEm  DateTime?
+  preCadastro          PreCadastro?
+  criadoEm             DateTime         @default(now())
+  atualizadoEm         DateTime         @updatedAt
+
+  @@index([status, nome])
+}
