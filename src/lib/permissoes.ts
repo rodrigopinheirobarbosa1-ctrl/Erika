@@ -34,6 +34,10 @@ export const veAgenda = (p: Papel) => vePacientes(p)
  * do sistema lê (acesso total), mas não escreve.
  */
 export const escreveProntuario = (p: Papel) => p === 'ADMIN'
+/** Contas a receber: ver saldos e registrar pagamentos (inclui a secretária). */
+export const registraPagamentos = (p: Papel) => vePacientes(p)
+/** Resumo do mês, despesas e relatório do carnê-leão. */
+export const veFinanceiro = (p: Papel) => acessoTotal(p)
 /** Histórico de acessos (cita nomes de pacientes). */
 export const veHistorico = (p: Papel) => acessoTotal(p)
 /** Tela de usuários. */

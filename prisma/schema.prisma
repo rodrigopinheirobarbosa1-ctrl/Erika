@@ -181,6 +181,7 @@ model Paciente {
   preCadastro          PreCadastro?
   atendimentos         Atendimento[]
   registros            RegistroProntuario[]
+  pagamentos           Pagamento[]
   criadoEm             DateTime         @default(now())
   atualizadoEm         DateTime         @updatedAt
 
@@ -215,6 +216,8 @@ model Atendimento {
   recado              String?
   /// Valor da sessão no momento do agendamento (centavos) — base do financeiro.
   valorCentavos       Int?
+  /// Falta só entra na conta do paciente se a psicóloga marcar para cobrar.
+  cobrarFalta         Boolean             @default(false)
   /// Agendamentos criados juntos pelo "repetir toda semana".
   serieId             String?
   registros           RegistroProntuario[]
@@ -252,4 +255,77 @@ model RegistroProntuario {
 
   @@index([pacienteId, criadoEm])
   @@index([atendimentoId])
+}
+
+// ----------------------------------------------------------------------------
+// FINANCEIRO
+// ----------------------------------------------------------------------------
+// O que o paciente deve NÃO é gravado: sai das sessões (realizadas, e faltas
+// marcadas para cobrar) pelo valor de cada uma. Aqui ficam só os pagamentos.
+
+enum FormaPagamento {
+  PIX
+  DINHEIRO
+  CARTAO_DEBITO
+  CARTAO_CREDITO
+  TRANSFERENCIA
+  OUTRO
+}
+
+/// Pagamento recebido de um paciente. Nunca é apagado: erro = estorno.
+model Pagamento {
+  id             String         @id @default(cuid())
+  pacienteId     String
+  paciente       Paciente       @relation(fields: [pacienteId], references: [id])
+  /// Dia do recebimento (meia-noite UTC).
+  data           DateTime
+  valorCentavos  Int
+  forma          FormaPagamento
+  /// Quem pagou, quando não é o próprio paciente (carnê-leão pede o CPF).
+  pagadorNome    String?
+  pagadorCpf     String?
+  /// Controle: recibo já emitido no app Receita Saúde.
+  reciboEmitido  Boolean        @default(false)
+  observacao     String?
+  estornadoEm    DateTime?
+  estornoMotivo  String?
+  autorNome      String
+  criadoEm       DateTime       @default(now())
+
+  @@index([pacienteId, data])
+  @@index([data])
+}
+
+enum CategoriaDespesa {
+  SALA
+  CONSELHO
+  SUPERVISAO
+  FORMACAO
+  MATERIAL
+  DIVULGACAO
+  IMPOSTOS
+  TRANSPORTE
+  SISTEMAS
+  OUTROS
+}
+
+/// Conta a pagar do consultório.
+model Despesa {
+  id             String           @id @default(cuid())
+  descricao      String
+  categoria      CategoriaDespesa
+  valorCentavos  Int
+  /// Dia do vencimento (meia-noite UTC).
+  vencimento     DateTime
+  /// Dia em que foi paga (meia-noite UTC); vazio = em aberto.
+  pagoEm         DateTime?
+  forma          FormaPagamento?
+  observacao     String?
+  /// Despesas criadas juntas pelo "repetir todo mês".
+  serieId        String?
+  criadoEm       DateTime         @default(now())
+  atualizadoEm   DateTime         @updatedAt
+
+  @@index([vencimento])
+  @@index([pagoEm])
 }

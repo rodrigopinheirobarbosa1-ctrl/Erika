@@ -161,7 +161,7 @@ export function Indicador({ titulo, valor, detalhe, href }: { titulo: string; va
   const corpo = (
     <>
       <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">{titulo}</p>
-      <p className="mt-2 text-3xl font-semibold tabular-nums text-cacau">{valor}</p>
+      <p className="mt-2 whitespace-nowrap text-xl font-semibold tabular-nums text-cacau sm:text-3xl">{valor}</p>
       {detalhe && <p className="mt-1 text-xs text-stone-500">{detalhe}</p>}
     </>
   )

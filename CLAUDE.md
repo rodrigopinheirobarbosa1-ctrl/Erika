@@ -20,6 +20,11 @@ dev: explicar passos em português, bem detalhados. Nada roda no computador dele
   RETIFICACAO com `retificaId`. Só ADMIN (a psicóloga) escreve (`escreveProntuario`);
   TOTAL lê. Agenda (`Atendimento`) guarda instante UTC; telas usam `src/lib/horario.ts`
   (Brasília = UTC-3 fixo). `Atendimento.valorCentavos` é a base da Etapa 3 (financeiro).
+- Financeiro: o que o paciente deve NÃO é gravado — sai das sessões (`cobravel` em
+  `src/lib/financeiro.ts`: REALIZADO, ou FALTOU com `cobrarFalta`). `Pagamento` nunca é
+  apagado (estorno com motivo). Recibo oficial é no app Receita Saúde: o sistema só
+  marca `reciboEmitido`. Secretária registra pagamentos; resumo/despesas/relatório só
+  ADMIN e TOTAL (`veFinanceiro`).
 - Enums do Prisma: usar os nomes (`'PRESENCIAL'`), valores em CENTAVOS, datas de calendário à meia-noite UTC.
 - O repositório é PÚBLICO: nunca commitar dados reais, documentos ou chaves.
 - Divulgação de psicólogo (CFP): sempre mostrar nome + CRP; não usar depoimentos de

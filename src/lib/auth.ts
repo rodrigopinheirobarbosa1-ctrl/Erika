@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { createHmac, randomBytes } from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import { db } from './db'
-import { gereUsuarios, veClinico, vePacientes, type Papel } from './permissoes'
+import { gereUsuarios, veClinico, veFinanceiro, vePacientes, type Papel } from './permissoes'
 
 // Mesmo modelo de login do Mathima.
 const COOKIE = 'erika_sessao'
@@ -160,6 +160,19 @@ export async function exigirGestorUsuarios(): Promise<UsuarioLogado> {
 export async function exigirGestorUsuariosAction(): Promise<UsuarioLogado> {
   const usuario = await exigirUsuarioAction()
   if (!gereUsuarios(usuario.papel)) throw new Error('Seu perfil não tem permissão para gerenciar usuários.')
+  return usuario
+}
+
+/** Resumo, despesas e relatórios financeiros (psicóloga e administrador do sistema). */
+export async function exigirFinanceiro(): Promise<UsuarioLogado> {
+  const usuario = await exigirUsuario()
+  if (!veFinanceiro(usuario.papel)) redirect('/sistema')
+  return usuario
+}
+
+export async function exigirFinanceiroAction(): Promise<UsuarioLogado> {
+  const usuario = await exigirUsuarioAction()
+  if (!veFinanceiro(usuario.papel)) throw new Error('Seu perfil não tem acesso ao financeiro.')
   return usuario
 }
 

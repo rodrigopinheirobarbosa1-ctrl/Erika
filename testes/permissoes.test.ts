@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { escreveProntuario, veAgenda, gereUsuarios, podeAtribuir, podeEditar, veClinico, veHistorico, vePacientes } from '../src/lib/permissoes'
+import { registraPagamentos, veFinanceiro, escreveProntuario, veAgenda, gereUsuarios, podeAtribuir, podeEditar, veClinico, veHistorico, vePacientes } from '../src/lib/permissoes'
 
 test('só a psicóloga vê textos clínicos', () => {
   assert.equal(veClinico('ADMIN'), true)
@@ -36,4 +36,11 @@ test('agenda e prontuário', () => {
   assert.equal(escreveProntuario('ADMIN'), true)
   assert.equal(escreveProntuario('TOTAL'), false) // lê, mas não escreve
   assert.equal(veClinico('TOTAL'), true)
+})
+
+test('financeiro', () => {
+  assert.equal(registraPagamentos('ASSISTENTE'), true)
+  assert.equal(veFinanceiro('ASSISTENTE'), false)
+  assert.equal(veFinanceiro('TOTAL'), true)
+  assert.equal(registraPagamentos('SUPORTE'), false)
 })

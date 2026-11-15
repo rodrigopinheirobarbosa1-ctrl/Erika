@@ -10,6 +10,7 @@ import { exigirAcessoPacientesAction } from '@/lib/auth'
 import { auditar } from '@/lib/audit'
 import { localParaUtc, rotuloInstante, segundaDaSemana, sobrepoe, utcParaLocal } from '@/lib/horario'
 import { STATUS_ATENDIMENTO } from '@/lib/rotulos'
+import { lerReais } from '@/lib/formatos'
 import type { EstadoForm } from '@/components/form'
 
 const vazioNulo = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? null : v)
@@ -97,6 +98,12 @@ export async function alterarAtendimento(id: string, _e: EstadoForm, dados: Form
   const inicio = localParaUtc(d.data, d.hora)
   if (!inicio) return { erro: 'Data ou horário inválido.' }
 
+  // Valor desta sessão (vazio = sem valor; 0 = sem cobrança, ex.: cortesia).
+  const valorTexto = String(dados.get('valor') ?? '').trim()
+  const valorCentavos = valorTexto === '' ? null : lerReais(valorTexto)
+  if (valorCentavos !== null && (Number.isNaN(valorCentavos) || valorCentavos < 0)) return { erro: 'Valor da sessão inválido. Ex.: 180,00' }
+  const cobrarFalta = dados.get('cobrarFalta') === 'on'
+
   const mudouHorario = inicio.getTime() !== atual.inicio.getTime() || d.duracaoMin !== atual.duracaoMin
   if (mudouHorario && (d.status === 'AGENDADO' || d.status === 'REALIZADO')) {
     const choques = await conflitos([inicio], d.duracaoMin, id)
@@ -105,11 +112,13 @@ export async function alterarAtendimento(id: string, _e: EstadoForm, dados: Form
 
   await db.atendimento.update({
     where: { id },
-    data: { inicio, duracaoMin: d.duracaoMin, modalidade: d.modalidade ?? atual.modalidade, linkOnline: d.linkOnline, recado: d.recado, status: d.status },
+    data: { inicio, duracaoMin: d.duracaoMin, modalidade: d.modalidade ?? atual.modalidade, linkOnline: d.linkOnline, recado: d.recado, status: d.status, valorCentavos, cobrarFalta },
   })
   const mudancas = [
     mudouHorario && `remarcou de ${rotuloInstante(atual.inicio)} para ${rotuloInstante(inicio)}`,
     d.status !== atual.status && `situação: ${STATUS_ATENDIMENTO[d.status]}`,
+    valorCentavos !== atual.valorCentavos && 'valor',
+    cobrarFalta !== atual.cobrarFalta && (cobrarFalta ? 'falta será cobrada' : 'falta não será cobrada'),
   ].filter(Boolean)
   await auditar({
     usuario,

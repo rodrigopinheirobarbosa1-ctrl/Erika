@@ -8,6 +8,7 @@ import { formatarReais, linkWhatsapp } from '@/lib/formatos'
 import { rotuloInstante, utcParaLocal } from '@/lib/horario'
 import { escreveProntuario } from '@/lib/permissoes'
 import { MODALIDADES, STATUS_ATENDIMENTO, TOM_ATENDIMENTO } from '@/lib/rotulos'
+import { cobravel } from '@/lib/financeiro'
 import { Cabecalho, Cartao, Dado, Etiqueta, LinkBotao } from '@/components/ui'
 import { BotaoEnviar, Formulario } from '@/components/form'
 import { Caixa, Selecao, Texto } from '@/components/campos'
@@ -52,7 +53,18 @@ export default async function Sessao({ params }: { params: Promise<{ id: string 
         <Cartao titulo="Sessão" acao={<Etiqueta tom={TOM_ATENDIMENTO[a.status]}>{STATUS_ATENDIMENTO[a.status]}</Etiqueta>}>
           <dl className="grid gap-4 sm:grid-cols-2">
             <Dado rotulo="Modalidade">{MODALIDADES[a.modalidade]}</Dado>
-            <Dado rotulo="Valor da sessão">{a.valorCentavos != null ? formatarReais(a.valorCentavos) : ''}</Dado>
+            <Dado rotulo="Valor da sessão">
+              {a.valorCentavos != null ? formatarReais(a.valorCentavos) : 'Sem valor definido'}
+              <span className="block text-xs text-stone-500">
+                {cobravel(a)
+                  ? 'Entra na conta do paciente.'
+                  : a.status === 'FALTOU'
+                    ? 'Falta não cobrada (dá para mudar em "Remarcar ou alterar").'
+                    : a.status === 'AGENDADO'
+                      ? 'Entra na conta quando for marcada como realizada.'
+                      : 'Não entra na conta.'}
+              </span>
+            </Dado>
             {a.modalidade === 'ONLINE' && (
               <Dado rotulo="Videochamada">
                 {a.linkOnline ? (
@@ -148,6 +160,16 @@ export default async function Sessao({ params }: { params: Promise<{ id: string 
             <Selecao rotulo="Modalidade" nome="modalidade" valor={a.modalidade} opcoes={Object.entries(MODALIDADES).map(([valor, texto]) => ({ valor, texto }))} />
             <Selecao rotulo="Situação" nome="status" valor={a.status} opcoes={Object.entries(STATUS_ATENDIMENTO).map(([valor, texto]) => ({ valor, texto }))} />
             <Texto rotulo="Link da videochamada" nome="linkOnline" valor={a.linkOnline} />
+            <Texto
+              rotulo="Valor desta sessão (R$)"
+              nome="valor"
+              modo="decimal"
+              valor={a.valorCentavos != null ? (a.valorCentavos / 100).toFixed(2).replace('.', ',') : ''}
+              dica="0 = sem cobrança (cortesia)."
+            />
+            <div className="flex items-end pb-2">
+              <Caixa rotulo="Cobrar se for falta" nome="cobrarFalta" marcado={a.cobrarFalta} />
+            </div>
             <Texto rotulo="Recado de agenda (não clínico)" nome="recado" valor={a.recado} maximo={300} className="sm:col-span-2" />
             <div className="sm:col-span-2">
               <Caixa rotulo="Salvar mesmo com conflito de horário" nome="ignorarConflito" />

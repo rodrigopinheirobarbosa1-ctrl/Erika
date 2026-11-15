@@ -1,4 +1,4 @@
-import type { AreaAtendimento, Modalidade, StatusAtendimento, StatusPaciente, StatusPreCadastro, TipoRegistro } from '@prisma/client'
+import type { CategoriaDespesa, FormaPagamento, AreaAtendimento, Modalidade, StatusAtendimento, StatusPaciente, StatusPreCadastro, TipoRegistro } from '@prisma/client'
 
 export const MODALIDADES: Record<Modalidade, string> = {
   PRESENCIAL: 'Presencial (consultório)',
@@ -54,6 +54,28 @@ export const MODALIDADES_CURTAS: Record<Modalidade, string> = {
   PRESENCIAL: 'Consultório',
   ONLINE: 'Online',
   DOMICILIO: 'Domicílio',
+}
+
+export const FORMAS_PAGAMENTO: Record<FormaPagamento, string> = {
+  PIX: 'Pix',
+  DINHEIRO: 'Dinheiro',
+  CARTAO_DEBITO: 'Cartão de débito',
+  CARTAO_CREDITO: 'Cartão de crédito',
+  TRANSFERENCIA: 'Transferência',
+  OUTRO: 'Outro',
+}
+
+export const CATEGORIAS_DESPESA: Record<CategoriaDespesa, string> = {
+  SALA: 'Sala / consultório',
+  CONSELHO: 'Conselho (CRP)',
+  SUPERVISAO: 'Supervisão',
+  FORMACAO: 'Cursos e formação',
+  MATERIAL: 'Material',
+  DIVULGACAO: 'Divulgação',
+  IMPOSTOS: 'Impostos',
+  TRANSPORTE: 'Transporte',
+  SISTEMAS: 'Sistemas e assinaturas',
+  OUTROS: 'Outros',
 }
 
 export const opcoes = <T extends string>(mapa: Record<T, string>) =>
