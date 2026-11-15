@@ -10,6 +10,7 @@ import { BotaoEnviar, Formulario } from '@/components/form'
 import { AreaTexto, Selecao } from '@/components/campos'
 import { atualizarPreCadastro } from '../actions'
 import { FichasAnamnese } from '@/components/fichas-anamnese'
+import { ORIGENS } from '@/lib/rotulos'
 
 export default async function PedidoDeContato({ params }: { params: Promise<{ id: string }> }) {
   const usuario = await exigirAcessoPacientes()
@@ -58,7 +59,7 @@ export default async function PedidoDeContato({ params }: { params: Promise<{ id
         <Cartao titulo="O que a pessoa enviou">
           <dl className="grid gap-4 sm:grid-cols-2">
             <Dado rotulo="Telefone">{formatarTelefone(p.telefone)}</Dado>
-            <Dado rotulo="Origem">{p.origem === 'SITE' ? 'Formulário do site' : p.origem === 'WHATSAPP' ? 'WhatsApp (registrado à mão)' : p.origem === 'INDICACAO' ? 'Indicação' : 'Outro'}</Dado>
+            <Dado rotulo="Origem">{ORIGENS[p.origem] ?? 'Outro'}</Dado>
             <Dado rotulo="E-mail">{p.email}</Dado>
             <Dado rotulo="Modalidade">{p.modalidade ? MODALIDADES[p.modalidade] : ''}</Dado>
             <Dado rotulo="Assunto">{p.area ? AREAS[p.area] : ''}</Dado>

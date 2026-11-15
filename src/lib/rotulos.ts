@@ -78,5 +78,13 @@ export const CATEGORIAS_DESPESA: Record<CategoriaDespesa, string> = {
   OUTROS: 'Outros',
 }
 
+export const ORIGENS: Record<string, string> = {
+  SITE: 'Formulário do site',
+  WHATSAPP_SITE: 'WhatsApp (pelo site)',
+  WHATSAPP: 'WhatsApp (registrado à mão)',
+  INDICACAO: 'Indicação',
+  OUTRO: 'Outro',
+}
+
 export const opcoes = <T extends string>(mapa: Record<T, string>) =>
   (Object.entries(mapa) as [T, string][]).map(([valor, texto]) => ({ valor, texto }))

@@ -57,6 +57,7 @@ export default async function PreCadastros({ searchParams }: { searchParams: Pro
                   </span>
                   <span className="flex flex-col items-end gap-1">
                     <Etiqueta tom={TOM_PRE[p.status]}>{STATUS_PRE[p.status]}</Etiqueta>
+                    {p.origem.startsWith('WHATSAPP') && <Etiqueta tom="verde">WhatsApp</Etiqueta>}
                     {p.fichas.some((f) => f.status === 'RESPONDIDA') ? (
                       <Etiqueta tom="verde">Ficha recebida</Etiqueta>
                     ) : p.fichas.some((f) => f.status === 'PENDENTE') ? (

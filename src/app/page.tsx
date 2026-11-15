@@ -6,6 +6,7 @@ import { linkWhatsapp } from '@/lib/formatos'
 import { CabecalhoSite } from '@/components/site/cabecalho'
 import { FormularioPreCadastro } from '@/components/site/formulario-pre-cadastro'
 import { WhatsappFlutuante } from '@/components/site/whatsapp-flutuante'
+import { BotaoWhatsapp, JanelaWhatsapp } from '@/components/site/contato-whatsapp'
 import {
   IconeAgenda,
   IconeBroto,
@@ -114,9 +115,9 @@ export default function PaginaInicial() {
                   Agende sua consulta
                 </a>
                 {site.whatsapp ? (
-                  <a href={linkWhatsapp(site.whatsapp, site.mensagemWhatsapp)} target="_blank" rel="noopener noreferrer" className="btn-site-claro">
+                  <BotaoWhatsapp href={linkWhatsapp(site.whatsapp, site.mensagemWhatsapp)} className="btn-site-claro">
                     <IconeWhatsapp /> Falar pelo WhatsApp
-                  </a>
+                  </BotaoWhatsapp>
                 ) : (
                   <a href="#areas" className="btn-site-claro">
                     Conheça as áreas de atuação
@@ -284,14 +285,12 @@ export default function PaginaInicial() {
               <ul className="mt-6 space-y-3 text-tinta/90">
                 {site.whatsapp && (
                   <li>
-                    <a
+                    <BotaoWhatsapp
                       href={linkWhatsapp(site.whatsapp, site.mensagemWhatsapp)}
                       className="btn-site"
-                      target="_blank"
-                      rel="noopener noreferrer"
                     >
                       <IconeWhatsapp /> Falar pelo WhatsApp
-                    </a>
+                    </BotaoWhatsapp>
                   </li>
                 )}
                 {site.instagram && (
@@ -320,6 +319,7 @@ export default function PaginaInicial() {
       </main>
 
       <WhatsappFlutuante />
+      {site.whatsapp && <JanelaWhatsapp />}
 
       {/* -------------------------------------------------- RODAPÉ */}
       <footer className="border-t border-nude bg-blush/60 px-4 py-10 text-center sm:px-6">
