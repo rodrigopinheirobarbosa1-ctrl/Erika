@@ -146,6 +146,12 @@ export default async function Sessao({ params }: { params: Promise<{ id: string 
                 {a.status === 'AGENDADO' && <p className="mt-2 text-xs text-stone-400">Ao salvar, a sessão é marcada como realizada.</p>}
               </div>
             )}
+            {!escreveProntuario(usuario.papel) && (
+              <p className="mt-4 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-500">
+                Seu perfil lê o prontuário, mas só a psicóloga registra a evolução (ato profissional). O campo de escrita aparece no
+                login dela.
+              </p>
+            )}
           </Cartao>
         )}
 
