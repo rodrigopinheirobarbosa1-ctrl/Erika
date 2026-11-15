@@ -25,13 +25,24 @@ export default async function PrimeiroAcesso() {
             <Texto rotulo="E-mail" nome="email" tipo="email" obrigatorio />
             <Texto rotulo="Senha" nome="senha" tipo="password" obrigatorio dica="Pelo menos 10 caracteres." />
             <Texto rotulo="Repita a senha" nome="confirmacao" tipo="password" obrigatorio />
-            <Texto
-              rotulo="Chave de instalação"
-              nome="chaveInstalacao"
-              tipo="password"
-              obrigatorio
-              dica="É a frase cadastrada como SESSION_SECRET na Vercel. Protege esta tela de estranhos."
-            />
+            {/* Campo visível e sem correção automática: no celular o teclado
+                costuma pôr a 1ª letra em maiúscula, e escondido não dá para ver. */}
+            <label className="block">
+              <span className="rotulo">Chave de instalação</span>
+              <input
+                type="text"
+                name="chaveInstalacao"
+                required
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                className="campo font-mono"
+              />
+              <span className="mt-1 block text-xs text-stone-400">
+                É a frase cadastrada como SESSION_SECRET na Vercel (a frase 1). Protege esta tela de estranhos.
+              </span>
+            </label>
             <BotaoEnviar>Criar acesso</BotaoEnviar>
           </Formulario>
         </div>
