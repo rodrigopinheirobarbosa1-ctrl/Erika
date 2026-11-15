@@ -6,6 +6,11 @@ import { db } from '@/lib/db'
 import { exigirGestorUsuariosAction, hashSenha } from '@/lib/auth'
 import { auditar } from '@/lib/audit'
 import { PAPEIS, ehPapel, podeAtribuir, podeEditar } from '@/lib/permissoes'
+
+/** Só pode haver UM administrador do sistema ativo. */
+async function outroTotalAtivo(excetoId?: string) {
+  return db.usuario.findFirst({ where: { papel: 'TOTAL', ativo: true, ...(excetoId ? { id: { not: excetoId } } : {}) } })
+}
 import type { EstadoForm } from '@/components/form'
 
 const MINIMO_SENHA = 10
@@ -23,7 +28,11 @@ export async function criarUsuario(_e: EstadoForm, dados: FormData): Promise<Est
   const { nome, email, senha } = r.data
   const papel = r.data.papel as keyof typeof PAPEIS
   if (senha.length < MINIMO_SENHA) return { erro: `A senha inicial precisa ter pelo menos ${MINIMO_SENHA} caracteres.` }
-  if (!podeAtribuir(quem.papel, papel)) return { erro: 'Só a psicóloga (administradora) pode criar outra administradora.' }
+  if (!podeAtribuir(quem.papel, papel)) return { erro: 'Seu perfil não pode dar esse acesso.' }
+  if (papel === 'TOTAL') {
+    const outro = await outroTotalAtivo()
+    if (outro) return { erro: `Já existe um administrador do sistema ativo (${outro.nome}). Só pode haver um.` }
+  }
   if (await db.usuario.findUnique({ where: { email } })) return { erro: 'Já existe um usuário com esse e-mail.' }
 
   const novo = await db.usuario.create({ data: { nome, email, papel, senhaHash: await hashSenha(senha) } })
@@ -48,14 +57,19 @@ export async function alterarUsuario(id: string, _e: EstadoForm, dados: FormData
 
   const alvo = await db.usuario.findUnique({ where: { id } })
   if (!alvo) return { erro: 'Usuário não encontrado.' }
-  if (!podeEditar(quem.papel, alvo.papel)) return { erro: 'Só a psicóloga (administradora) pode alterar uma conta de administradora.' }
-  if (papel !== alvo.papel && !podeAtribuir(quem.papel, papel)) return { erro: 'Só a psicóloga (administradora) pode dar o perfil de administradora.' }
+  if (!podeEditar(quem.papel, alvo.papel)) return { erro: 'Seu perfil não pode alterar esta conta.' }
+  if (papel !== alvo.papel && !podeAtribuir(quem.papel, papel)) return { erro: 'Seu perfil não pode dar esse acesso.' }
+  if (papel === 'TOTAL' && ativo) {
+    const outro = await outroTotalAtivo(id)
+    if (outro) return { erro: `Já existe um administrador do sistema ativo (${outro.nome}). Só pode haver um.` }
+  }
   if (email !== alvo.email && (await db.usuario.findUnique({ where: { email } }))) return { erro: 'Já existe outro usuário com esse e-mail.' }
 
-  // O consultório nunca pode ficar sem nenhuma administradora ativa.
-  if (alvo.papel === 'ADMIN' && (papel !== 'ADMIN' || !ativo)) {
-    const outras = await db.usuario.count({ where: { papel: 'ADMIN', ativo: true, id: { not: id } } })
-    if (outras === 0) return { erro: 'Esta é a última administradora ativa. Crie ou promova outra antes de alterar esta.' }
+  // O consultório nunca pode ficar sem nenhuma conta de acesso total ativa.
+  const perdeAcessoTotal = (alvo.papel === 'ADMIN' || alvo.papel === 'TOTAL') && ((papel !== 'ADMIN' && papel !== 'TOTAL') || !ativo)
+  if (perdeAcessoTotal) {
+    const outras = await db.usuario.count({ where: { papel: { in: ['ADMIN', 'TOTAL'] }, ativo: true, id: { not: id } } })
+    if (outras === 0) return { erro: 'Esta é a última conta com acesso total ativa. Crie ou promova outra antes de alterar esta.' }
   }
 
   await db.usuario.update({ where: { id }, data: { nome, email, papel, ativo } })

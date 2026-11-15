@@ -29,13 +29,21 @@ export default async function Usuarios() {
             ))}
           </ul>
         </Aviso>
-        {quem.papel === 'ADMIN' && usuarios.length === 1 && (
+        {quem.papel === 'ADMIN' && !usuarios.some((u) => u.papel === 'TOTAL') && usuarios.length === 1 && (
           <Aviso tom="amarelo">
-            Por sigilo profissional, só a psicóloga deve ter o perfil de administradora. Se quem está configurando o sistema
-            não é a psicóloga: crie o acesso dela como <strong>Psicóloga (administradora)</strong> e depois mude o seu perfil para{' '}
+            Se quem está configurando o sistema não é a psicóloga: crie o acesso dela como{' '}
+            <strong>Psicóloga (administradora)</strong> e depois mude o seu perfil para <strong>Administrador do sistema</strong> ou{' '}
             <strong>Suporte técnico</strong>.
           </Aviso>
         )}
+        {usuarios
+          .filter((u) => u.papel === 'TOTAL' && u.ativo)
+          .map((u) => (
+            <Aviso key={u.id} tom="amarelo">
+              <strong>{u.nome}</strong> é o administrador do sistema: tem acesso a tudo, <strong>inclusive aos textos clínicos</strong>.
+              Toda ficha aberta fica no Histórico de acessos. A psicóloga pode desativar esta conta a qualquer momento.
+            </Aviso>
+          ))}
       </div>
 
       <div className="space-y-4">
@@ -48,7 +56,7 @@ export default async function Usuarios() {
               acao={
                 <span className="flex gap-1.5">
                   {!u.ativo && <Etiqueta tom="cinza">Desativado</Etiqueta>}
-                  <Etiqueta tom={u.papel === 'ADMIN' ? 'azul' : u.papel === 'SUPORTE' ? 'roxo' : 'verde'}>{PAPEIS[u.papel].nome}</Etiqueta>
+                  <Etiqueta tom={u.papel === 'ADMIN' ? 'azul' : u.papel === 'TOTAL' ? 'vermelho' : u.papel === 'SUPORTE' ? 'roxo' : 'verde'}>{PAPEIS[u.papel].nome}</Etiqueta>
                 </span>
               }
             >
@@ -71,7 +79,7 @@ export default async function Usuarios() {
                   </Formulario>
                 </details>
               ) : (
-                <p className="text-xs text-stone-400">Só a psicóloga (administradora) altera esta conta.</p>
+                <p className="text-xs text-stone-400">Seu perfil não altera esta conta.</p>
               )}
               <details className="mt-3">
                 <summary className="cursor-pointer text-sm font-medium text-marca-700">Redefinir a senha</summary>

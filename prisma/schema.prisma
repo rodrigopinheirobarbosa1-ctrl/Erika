@@ -27,12 +27,15 @@ datasource db {
 // ACESSO
 // ----------------------------------------------------------------------------
 
-/// ADMIN = a psicóloga (vê tudo). ASSISTENTE = secretária(o): pedidos e
-/// cadastro, sem textos clínicos. SUPORTE = apoio técnico: só usuários.
+/// ADMIN = a psicóloga (vê tudo). TOTAL = administrador do sistema (quem
+/// mantém o app; vê tudo; só um ativo; a psicóloga vê e pode desativar).
+/// ASSISTENTE = secretária(o): pedidos e cadastro, sem textos clínicos.
+/// SUPORTE = apoio técnico: só usuários.
 enum Papel {
   ADMIN
   ASSISTENTE
   SUPORTE
+  TOTAL
 }
 
 model Usuario {

@@ -12,6 +12,10 @@ dev: explicar passos em português, bem detalhados. Nada roda no computador dele
   `criptografar`/`descriptografar` (`src/lib/cripto.ts`). Nunca gravar texto clínico puro.
 - Nunca apagar paciente/prontuário (Resolução CFP 001/2009, guarda mínima de 5 anos): usar status.
 - Abrir ficha de paciente → `auditar({ acao: 'VISUALIZAR' })`.
+- Perfis (`src/lib/permissoes.ts`): ADMIN = a psicóloga; TOTAL = administrador do sistema
+  (o usuário dono do app; vê tudo; só 1 ativo; a psicóloga vê aviso e pode desativar);
+  ASSISTENTE = secretária, sem textos clínicos; SUPORTE = só usuários, não dá/edita
+  perfis de acesso total. Sempre conferir permissão pelas funções de `permissoes.ts`.
 - Enums do Prisma: usar os nomes (`'PRESENCIAL'`), valores em CENTAVOS, datas de calendário à meia-noite UTC.
 - O repositório é PÚBLICO: nunca commitar dados reais, documentos ou chaves.
 - Divulgação de psicólogo (CFP): sempre mostrar nome + CRP; não usar depoimentos de

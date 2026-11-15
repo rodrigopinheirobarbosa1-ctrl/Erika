@@ -1,5 +1,7 @@
 import { db } from '@/lib/db'
-import { exigirAdmin } from '@/lib/auth'
+import { exigirUsuario } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { veHistorico } from '@/lib/permissoes'
 import { formatarDataHora } from '@/lib/formatos'
 import { Cabecalho, Cartao, Tabela, Td, Th, Vazio } from '@/components/ui'
 
@@ -13,7 +15,8 @@ const ACOES: Record<string, string> = {
 }
 
 export default async function Historico() {
-  await exigirAdmin()
+  const usuario = await exigirUsuario()
+  if (!veHistorico(usuario.papel)) redirect('/sistema')
   const registros = await db.auditoria.findMany({ orderBy: { criadoEm: 'desc' }, take: 300 })
   return (
     <div className="mx-auto max-w-5xl">
