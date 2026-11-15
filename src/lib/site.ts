@@ -18,7 +18,7 @@ export const site = {
   enderecoConsultorio: '',
 
   // Preencha quando tiver (deixe '' para esconder):
-  whatsapp: '', // ex.: '61999998888' (com DDD; aparece o botão do WhatsApp no site)
+  whatsapp: '61999639910', // TEMPORÁRIO — trocar pelo número definitivo da Érika. ex.: '61999998888' (com DDD; aparece o botão do WhatsApp no site)
   mensagemWhatsapp: 'Olá, Érika! Vim pelo site e gostaria de agendar uma consulta.',
   instagram: '', // ex.: 'erikadias.psi' (sem o @)
   email: '', // ex.: 'contato@erikadias.com.br'
