@@ -5,6 +5,7 @@ import { db } from '@/lib/db'
 import { exigirFinanceiroAction } from '@/lib/auth'
 import { auditar } from '@/lib/audit'
 import { cpfValido, soDigitos } from '@/lib/formatos'
+import { MOTIVOS_SEM_RECIBO } from '@/lib/receita-saude'
 import type { EstadoForm } from '@/components/form'
 
 export async function salvarDadosRecibo(_e: EstadoForm, dados: FormData): Promise<EstadoForm> {
@@ -30,4 +31,25 @@ export async function marcarLoteEmitido(_e: EstadoForm, dados: FormData): Promis
   await auditar({ usuario, acao: 'ALTERAR', entidade: 'Pagamento', resumo: `Marcou ${count} recibo(s) como emitidos no Receita Saúde (importação em lote)` })
   revalidatePath('/sistema', 'layout')
   return { ok: `${count} recibo(s) marcados como emitidos.` }
+}
+
+/** "Não será emitido recibo": tira o pagamento das pendências, com o motivo. */
+export async function dispensarRecibo(id: string, _e: EstadoForm, dados: FormData): Promise<EstadoForm> {
+  const usuario = await exigirFinanceiroAction()
+  const escolhido = String(dados.get('motivo') ?? '')
+  const detalhe = String(dados.get('detalhe') ?? '').trim()
+  if (!(MOTIVOS_SEM_RECIBO as readonly string[]).includes(escolhido)) return { erro: 'Escolha o motivo.' }
+  const motivo = (escolhido === 'Outro' && detalhe ? `Outro: ${detalhe}` : escolhido).slice(0, 200)
+  const p = await db.pagamento.update({ where: { id }, data: { reciboDispensadoMotivo: motivo }, include: { paciente: { select: { nome: true } } } })
+  await auditar({ usuario, acao: 'ALTERAR', entidade: 'Pagamento', entidadeId: id, resumo: `Marcou "sem recibo" no pagamento de ${p.paciente.nome} (${motivo})` })
+  revalidatePath('/sistema', 'layout')
+  return { ok: 'Não será emitido recibo para este pagamento.' }
+}
+
+export async function desfazerDispensa(id: string, _e: EstadoForm, _d: FormData): Promise<EstadoForm> {
+  const usuario = await exigirFinanceiroAction()
+  const p = await db.pagamento.update({ where: { id }, data: { reciboDispensadoMotivo: null }, include: { paciente: { select: { nome: true } } } })
+  await auditar({ usuario, acao: 'ALTERAR', entidade: 'Pagamento', entidadeId: id, resumo: `Voltou a pedir recibo para o pagamento de ${p.paciente.nome}` })
+  revalidatePath('/sistema', 'layout')
+  return { ok: 'Voltou para a lista de recibos a emitir.' }
 }

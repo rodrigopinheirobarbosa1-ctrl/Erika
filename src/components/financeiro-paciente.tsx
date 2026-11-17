@@ -82,6 +82,8 @@ export function FinanceiroPaciente({
                   </span>
                   {p.estornadoEm ? (
                     <Etiqueta tom="cinza">Estornado</Etiqueta>
+                  ) : p.reciboDispensadoMotivo && !p.reciboEmitido ? (
+                    <Etiqueta tom="cinza">Sem recibo: {p.reciboDispensadoMotivo}</Etiqueta>
                   ) : (
                     <Formulario action={marcarRecibo.bind(null, p.id)}>
                       <input type="hidden" name="emitido" value={p.reciboEmitido ? 'nao' : 'sim'} />

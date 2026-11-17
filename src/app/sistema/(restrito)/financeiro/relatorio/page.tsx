@@ -28,7 +28,7 @@ export default async function Relatorio({ searchParams }: { searchParams: Promis
   ])
   const totalRecebido = pagamentos.reduce((t, p) => t + p.valorCentavos, 0)
   const totalDespesas = despesas.reduce((t, d) => t + d.valorCentavos, 0)
-  const pendentes = pagamentos.filter((p) => !p.reciboEmitido).length
+  const pendentes = pagamentos.filter((p) => !p.reciboEmitido && !p.reciboDispensadoMotivo).length
 
   return (
     <div className="mx-auto max-w-4xl bg-white p-4 text-stone-900 sm:p-6 print:p-0">
@@ -77,7 +77,8 @@ export default async function Relatorio({ searchParams }: { searchParams: Promis
                 <Td>{FORMAS_PAGAMENTO[p.forma]}</Td>
                 <Td alinhar="direita">{formatarReais(p.valorCentavos)}</Td>
                 <Td>
-                  <span className="print:inline hidden">{p.reciboEmitido ? 'emitido' : 'pendente'}</span>
+                  <span className="print:inline hidden">{p.reciboEmitido ? 'emitido' : p.reciboDispensadoMotivo ? 'sem recibo' : 'pendente'}</span>
+                  {p.reciboDispensadoMotivo && !p.reciboEmitido && <span className="block text-xs text-stone-500 nao-imprimir">sem recibo: {p.reciboDispensadoMotivo}</span>}
                   <Formulario action={marcarRecibo.bind(null, p.id)} className="nao-imprimir">
                     <input type="hidden" name="emitido" value={p.reciboEmitido ? 'nao' : 'sim'} />
                     <BotaoEnviar variante={p.reciboEmitido ? 'secundario' : 'primario'}>{p.reciboEmitido ? '✓ emitido' : 'Marcar emitido'}</BotaoEnviar>

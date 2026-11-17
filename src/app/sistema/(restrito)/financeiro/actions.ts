@@ -84,7 +84,7 @@ export async function estornarPagamento(id: string, _e: EstadoForm, dados: FormD
 export async function marcarRecibo(id: string, _e: EstadoForm, dados: FormData): Promise<EstadoForm> {
   const usuario = await exigirAcessoPacientesAction()
   const emitido = dados.get('emitido') === 'sim'
-  const p = await db.pagamento.update({ where: { id }, data: { reciboEmitido: emitido }, include: { paciente: { select: { nome: true } } } })
+  const p = await db.pagamento.update({ where: { id }, data: { reciboEmitido: emitido, ...(emitido ? { reciboDispensadoMotivo: null } : {}) }, include: { paciente: { select: { nome: true } } } })
   await auditar({ usuario, acao: 'ALTERAR', entidade: 'Pagamento', entidadeId: id, resumo: `Marcou recibo ${emitido ? 'emitido' : 'pendente'}: ${formatarReais(p.valorCentavos)} de ${p.paciente.nome}` })
   revalidatePath('/sistema', 'layout')
   return { ok: emitido ? 'Recibo marcado como emitido.' : 'Recibo marcado como pendente.' }

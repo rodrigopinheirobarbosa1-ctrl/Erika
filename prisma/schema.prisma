@@ -293,6 +293,8 @@ model Pagamento {
   pagadorCpf     String?
   /// Controle: recibo já emitido no app Receita Saúde.
   reciboEmitido  Boolean        @default(false)
+  /// "Não será emitido recibo" (cortesia, pago por empresa...), com o motivo.
+  reciboDispensadoMotivo String?
   observacao     String?
   estornadoEm    DateTime?
   estornoMotivo  String?

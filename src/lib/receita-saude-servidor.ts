@@ -21,7 +21,7 @@ export async function profissional() {
 export async function pagamentosSemRecibo(mes: string) {
   const { inicio, fim } = limitesDoMes(mes)
   const lista = await db.pagamento.findMany({
-    where: { estornadoEm: null, reciboEmitido: false, data: { gte: lerData(inicio)!, lt: lerData(fim)! } },
+    where: { estornadoEm: null, reciboEmitido: false, reciboDispensadoMotivo: null, data: { gte: lerData(inicio)!, lt: lerData(fim)! } },
     orderBy: [{ data: 'asc' }, { criadoEm: 'asc' }],
     include: { paciente: { select: { id: true, nome: true, cpf: true, responsavelCpf: true } } },
   })
@@ -35,5 +35,15 @@ export async function pagamentosSemRecibo(mes: string) {
       descricao: 'Atendimento psicologico (psicoterapia)',
     }
     return { item, pagamento: p }
+  })
+}
+
+/** Pagamentos do mês marcados como "não será emitido recibo". */
+export async function recibosDispensados(mes: string) {
+  const { inicio, fim } = limitesDoMes(mes)
+  return db.pagamento.findMany({
+    where: { estornadoEm: null, reciboEmitido: false, reciboDispensadoMotivo: { not: null }, data: { gte: lerData(inicio)!, lt: lerData(fim)! } },
+    orderBy: { data: 'asc' },
+    include: { paciente: { select: { id: true, nome: true } } },
   })
 }

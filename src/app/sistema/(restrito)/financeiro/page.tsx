@@ -29,7 +29,7 @@ export default async function Financeiro({ searchParams }: { searchParams: Promi
     db.despesa.aggregate({ where: { vencimento: { gte: di, lt: df } }, _sum: { valorCentavos: true } }),
     db.despesa.findMany({ where: { pagoEm: null, vencimento: { lt: lerData(hoje)! } }, orderBy: { vencimento: 'asc' }, take: 8 }),
     saldosPorPaciente(),
-    db.pagamento.count({ where: { estornadoEm: null, reciboEmitido: false } }),
+    db.pagamento.count({ where: { estornadoEm: null, reciboEmitido: false, reciboDispensadoMotivo: null } }),
   ])
   const recebido = recebidos._sum.valorCentavos ?? 0
   const faturado = sessoes.filter(cobravel).reduce((t, s) => t + (s.valorCentavos ?? 0), 0)
