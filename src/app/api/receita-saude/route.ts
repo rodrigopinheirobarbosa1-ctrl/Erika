@@ -13,7 +13,11 @@ export async function GET(req: Request) {
   const mes = new URL(req.url).searchParams.get('mes') ?? ''
   if (!mesValido(mes)) return new NextResponse('Mês inválido.', { status: 400 })
 
-  const itens = (await pagamentosSemRecibo(mes)).map((x) => x.item).filter((i) => pendencias(i).length === 0)
+  // ?ids=a,b,c: só os pagamentos selecionados na tela (sem ids: todos os prontos).
+  const ids = new Set((new URL(req.url).searchParams.get('ids') ?? '').split(',').filter(Boolean))
+  const itens = (await pagamentosSemRecibo(mes))
+    .map((x) => x.item)
+    .filter((i) => pendencias(i).length === 0 && (ids.size === 0 || ids.has(i.id)))
   let conteudo: string
   try {
     conteudo = gerarArquivo(itens, await profissional())
