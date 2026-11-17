@@ -7,7 +7,7 @@ import { pagamentosSemRecibo, profissional, recibosDispensados } from '@/lib/rec
 import { Cabecalho, Cartao, LinkBotao, Vazio } from '@/components/ui'
 import { BotaoEnviar, Formulario } from '@/components/form'
 import { Texto } from '@/components/campos'
-import { desfazerDispensa, dispensarRecibo, salvarDadosRecibo } from './actions'
+import { desfazerDispensa, dispensarRecibo, marcarLoteEmitido, salvarDadosRecibo } from './actions'
 import { Selecao } from '@/components/campos'
 import { SelecaoRecibos, type ItemTela } from './selecao'
 
@@ -54,20 +54,24 @@ export default async function ReceitaSaude({ searchParams }: { searchParams: Pro
               <p className="mb-3 text-xs text-stone-500">Cada recibo corresponde a um pagamento recebido (data e valor pagos), como pede a Receita. Todos vêm marcados; desmarque o que não quer emitir agora.</p>
               <SelecaoRecibos itens={itens} mes={mes} temCpf={!!prof.cpf} />
               <details className="mt-5 border-t border-stone-100 pt-3">
-                <summary className="cursor-pointer text-sm font-medium text-marca-700">Algum destes não terá recibo? (cortesia, pago por empresa…)</summary>
+                <summary className="cursor-pointer text-sm font-medium text-marca-700">Algum destes já foi emitido pelo app ou não terá recibo?</summary>
                 <ul className="mt-2 divide-y divide-stone-100">
                   {itens.map((i) => (
                     <li key={i.id} className="py-3">
-                      <p className="text-sm">
+                      <p className="text-sm font-medium">
                         {i.data} · {i.paciente} · {i.valor}
                       </p>
                       <Formulario action={dispensarRecibo.bind(null, i.id)} className="mt-2 flex flex-wrap items-end gap-2">
                         <Selecao rotulo="Motivo" nome="motivo" valor={MOTIVOS_SEM_RECIBO[0]} opcoes={MOTIVOS_SEM_RECIBO.map((m) => ({ valor: m, texto: m }))} />
                         <label className="block">
-                          <span className="rotulo">Detalhe (se “Outro”)</span>
+                          <span className="rotulo">Detalhe (obrigatório em “Outro”)</span>
                           <input name="detalhe" maxLength={150} className="campo" />
                         </label>
                         <BotaoEnviar variante="secundario">Não emitir recibo</BotaoEnviar>
+                      </Formulario>
+                      <Formulario action={marcarLoteEmitido} className="mt-2">
+                        <input type="hidden" name="ids" value={i.id} />
+                        <BotaoEnviar variante="secundario">Já emiti direto no Receita Saúde</BotaoEnviar>
                       </Formulario>
                     </li>
                   ))}

@@ -12,7 +12,7 @@ export const CODIGO_OCUPACAO = '255' // psicólogo
 export const MAXIMO_LINHAS = 1000
 
 /** Motivos para "não será emitido recibo" num pagamento. */
-export const MOTIVOS_SEM_RECIBO = ['Consulta não cobrada / cortesia', 'Pago por empresa (nota fiscal)', 'Lançado só para controle', 'Outro'] as const
+export const MOTIVOS_SEM_RECIBO = ['Consulta não cobrada / cortesia', 'Pago por empresa (nota fiscal)', 'Lançado só para controle', 'Outro (descreva no detalhe)'] as const
 
 export type ItemRecibo = {
   id: string

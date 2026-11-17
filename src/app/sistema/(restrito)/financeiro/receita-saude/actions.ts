@@ -39,7 +39,9 @@ export async function dispensarRecibo(id: string, _e: EstadoForm, dados: FormDat
   const escolhido = String(dados.get('motivo') ?? '')
   const detalhe = String(dados.get('detalhe') ?? '').trim()
   if (!(MOTIVOS_SEM_RECIBO as readonly string[]).includes(escolhido)) return { erro: 'Escolha o motivo.' }
-  const motivo = (escolhido === 'Outro' && detalhe ? `Outro: ${detalhe}` : escolhido).slice(0, 200)
+  const outro = escolhido.startsWith('Outro')
+  if (outro && !detalhe) return { erro: 'Em "Outro", descreva o motivo no campo de detalhe.' }
+  const motivo = (outro ? `Outro: ${detalhe}` : escolhido).slice(0, 200)
   const p = await db.pagamento.update({ where: { id }, data: { reciboDispensadoMotivo: motivo }, include: { paciente: { select: { nome: true } } } })
   await auditar({ usuario, acao: 'ALTERAR', entidade: 'Pagamento', entidadeId: id, resumo: `Marcou "sem recibo" no pagamento de ${p.paciente.nome} (${motivo})` })
   revalidatePath('/sistema', 'layout')
