@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { gerarArquivo, limparTexto, linhaRecibo, pendencias, valorArquivo } from '../src/lib/receita-saude'
+import { descricaoRecibo, gerarArquivo, limparTexto, linhaRecibo, pendencias, valorArquivo } from '../src/lib/receita-saude'
 
 const prof = { cpf: '529.982.247-25', registro: '' }
 const item = {
@@ -32,4 +32,10 @@ test('pendências e regras do arquivo', () => {
   assert.throws(() => gerarArquivo([item], { cpf: '' }), /CPF da profissional/)
   assert.throws(() => gerarArquivo([item, { ...item, data: new Date('2025-12-30T00:00:00Z') }], prof), /mesmo ano/)
   assert.match(gerarArquivo([item, item], prof), /^05\/11\/2026;.*\r\n05\/11\/2026;.*\r\n$/)
+})
+
+test('descrição do recibo com a observação do pagamento (pacote)', () => {
+  assert.equal(descricaoRecibo(null), 'Atendimento psicologico (psicoterapia)')
+  assert.equal(descricaoRecibo('pacote de 4 sessões, de 24/11 a 15/12'), 'Psicoterapia - pacote de 4 sessoes, de 24/11 a 15/12')
+  assert.ok(descricaoRecibo('x'.repeat(400)).length <= 255)
 })

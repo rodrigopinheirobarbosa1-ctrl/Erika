@@ -52,7 +52,14 @@ export default async function NovoPagamento({ searchParams }: { searchParams: Pr
             dica="Ex.: responsável, cônjuge. Vai para o relatório do carnê-leão."
           />
           <Texto rotulo="CPF de quem pagou" nome="pagadorCpf" modo="numeric" placeholder="000.000.000-00" />
-          <Texto rotulo="Observação" nome="observacao" maximo={300} className="sm:col-span-2" placeholder="Ex.: pacote de 4 sessões de novembro" />
+          <Texto
+            rotulo="Observação (vai na descrição do recibo)"
+            nome="observacao"
+            maximo={230}
+            className="sm:col-span-2"
+            placeholder="Ex.: pacote de 4 sessões, de 24/11 a 15/12"
+            dica="Aparece no recibo do Receita Saúde — não escreva nada clínico."
+          />
           <div className="sm:col-span-2">
             <Caixa rotulo="Recibo já emitido no app Receita Saúde" nome="reciboEmitido" />
           </div>

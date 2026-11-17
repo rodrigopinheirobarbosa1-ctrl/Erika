@@ -2,7 +2,7 @@ import 'server-only'
 import { db } from './db'
 import { lerData } from './formatos'
 import { limitesDoMes } from './financeiro'
-import type { ItemRecibo } from './receita-saude'
+import { descricaoRecibo, type ItemRecibo } from './receita-saude'
 
 export async function lerConfig(chave: string): Promise<string | null> {
   return (await db.configuracao.findUnique({ where: { chave } }))?.valor ?? null
@@ -32,7 +32,7 @@ export async function pagamentosSemRecibo(mes: string) {
       valorCentavos: p.valorCentavos,
       cpfBeneficiario: p.paciente.cpf,
       cpfPagador: p.pagadorCpf ?? (p.pagadorNome ? null : (p.paciente.responsavelCpf ?? p.paciente.cpf)),
-      descricao: 'Atendimento psicologico (psicoterapia)',
+      descricao: descricaoRecibo(p.observacao),
     }
     return { item, pagamento: p }
   })

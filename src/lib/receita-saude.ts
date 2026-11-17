@@ -26,6 +26,16 @@ export type ItemRecibo = {
 
 export type Profissional = { cpf: string; registro?: string | null }
 
+/**
+ * Descrição do recibo. A observação do pagamento entra junto (ex.: "pacote de
+ * 4 sessões, de 24/11 a 15/12") — o manual permite incluir as datas dos
+ * atendimentos neste campo.
+ */
+export function descricaoRecibo(observacao: string | null | undefined): string {
+  const obs = (observacao ?? '').trim()
+  return limparTexto(obs ? `Psicoterapia - ${obs}` : 'Atendimento psicologico (psicoterapia)')
+}
+
 /** Tira acentos e caracteres que poderiam quebrar o arquivo (";" e quebras de linha). */
 export function limparTexto(t: string, max = 255): string {
   return t.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[;\r\n\t]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max)
