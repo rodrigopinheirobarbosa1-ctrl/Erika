@@ -16,9 +16,10 @@ import { BotaoEnviar, Formulario } from '@/components/form'
 import { criarSalaPaciente } from '../../agenda/actions'
 import { Aviso, Cabecalho, Cartao, Dado, Etiqueta, LinkBotao } from '@/components/ui'
 
-export default async function FichaPaciente({ params }: { params: Promise<{ id: string }> }) {
+export default async function FichaPaciente({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aviso?: string }> }) {
   const usuario = await exigirAcessoPacientes()
   const { id } = await params
+  const { aviso } = await searchParams
   const p = await db.paciente.findUnique({ where: { id } })
   if (!p) notFound()
 
@@ -175,7 +176,7 @@ export default async function FichaPaciente({ params }: { params: Promise<{ id: 
 
         <FichasAnamnese fichas={fichas} alvo={{ pacienteId: p.id }} nome={p.nomeSocial || p.nome} telefone={p.telefone} clinico={clinico} />
 
-        <FinanceiroPaciente pacienteId={p.id} sessoes={contaSessoes} pagamentos={pagamentos} />
+        <FinanceiroPaciente pacienteId={p.id} sessoes={contaSessoes} pagamentos={pagamentos} aviso={aviso} />
 
         {clinico && (
           <Cartao

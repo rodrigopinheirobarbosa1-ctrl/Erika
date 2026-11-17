@@ -5,15 +5,17 @@ import { formatarData, formatarReais } from '@/lib/formatos'
 import { rotuloInstante } from '@/lib/horario'
 import { FORMAS_PAGAMENTO } from '@/lib/rotulos'
 import { BotaoEnviar, Formulario } from '@/components/form'
-import { Cartao, Etiqueta, LinkBotao } from '@/components/ui'
-import { estornarPagamento, marcarRecibo } from '@/app/sistema/(restrito)/financeiro/actions'
+import { Aviso, Cartao, Etiqueta, LinkBotao } from '@/components/ui'
+import { corrigirObservacao, estornarPagamento, marcarRecibo } from '@/app/sistema/(restrito)/financeiro/actions'
 
 /** Conta corrente do paciente: saldo, extrato e pagamentos. */
 export function FinanceiroPaciente({
   pacienteId,
   sessoes,
   pagamentos,
+  aviso,
 }: {
+  aviso?: string
   pacienteId: string
   sessoes: Pick<Atendimento, 'id' | 'inicio' | 'status' | 'valorCentavos' | 'cobrarFalta'>[]
   pagamentos: Pagamento[]
@@ -27,6 +29,23 @@ export function FinanceiroPaciente({
       className="lg:col-span-2 scroll-mt-20"
       acao={<LinkBotao href={`/sistema/financeiro/pagamento?paciente=${pacienteId}`}>+ Pagamento</LinkBotao>}
     >
+      {aviso === 'estornado' && (
+        <div className="mb-4">
+          <Aviso tom="verde">
+            Pagamento estornado: continua no histórico (riscado), mas deixou de contar. Se foi lançado errado, registre de novo em{' '}
+            <Link href={`/sistema/financeiro/pagamento?paciente=${pacienteId}`} className="underline">+ Pagamento</Link>.
+          </Aviso>
+        </div>
+      )}
+      {aviso?.startsWith('corrigido') && (
+        <div className="mb-4">
+          <Aviso tom={aviso === 'corrigido' ? 'verde' : 'amarelo'}>
+            {aviso === 'corrigido'
+              ? 'Observação corrigida. O recibo vai sair com o texto novo.'
+              : 'Observação corrigida no sistema. O recibo já emitido na Receita não muda — se precisar, cancele e emita de novo no Receita Saúde.'}
+          </Aviso>
+        </div>
+      )}
       <div id="financeiro" className="grid grid-cols-3 gap-3 text-center">
         <div>
           <p className="rotulo">Sessões cobradas</p>
@@ -70,8 +89,8 @@ export function FinanceiroPaciente({
       )}
 
       {pagamentos.length > 0 && (
-        <details className="mt-4">
-          <summary className="cursor-pointer text-sm font-medium text-marca-700">Pagamentos ({pagamentos.length}) — recibo e estorno</summary>
+        <details className="mt-4" open={!!aviso}>
+          <summary className="cursor-pointer text-sm font-medium text-marca-700">Pagamentos ({pagamentos.length}) — recibo, correção e estorno</summary>
           <ul className="mt-2 divide-y divide-stone-100 text-sm">
             {pagamentos.map((p) => (
               <li key={p.id} className="py-3">
@@ -92,11 +111,23 @@ export function FinanceiroPaciente({
                   )}
                 </div>
                 {p.observacao && <p className="text-xs text-stone-500">{p.observacao}</p>}
+                {!p.estornadoEm && (
+                  <details className="mt-1">
+                    <summary className="cursor-pointer text-xs text-marca-700">Corrigir observação (descrição do recibo)</summary>
+                    <Formulario action={corrigirObservacao.bind(null, p.id)} className="mt-2 flex flex-wrap items-end gap-2">
+                      <label className="block flex-1">
+                        <span className="rotulo">Observação</span>
+                        <input name="observacao" defaultValue={p.observacao ?? ''} maxLength={230} className="campo" />
+                      </label>
+                      <BotaoEnviar variante="secundario">Salvar correção</BotaoEnviar>
+                    </Formulario>
+                  </details>
+                )}
                 {p.estornadoEm ? (
                   <p className="text-xs text-stone-500">Motivo do estorno: {p.estornoMotivo}</p>
                 ) : (
                   <details className="mt-1">
-                    <summary className="cursor-pointer text-xs text-red-700">Estornar (lançado errado)</summary>
+                    <summary className="cursor-pointer text-xs text-red-700">Estornar (valor, data ou paciente errado)</summary>
                     <Formulario action={estornarPagamento.bind(null, p.id)} className="mt-2 flex flex-wrap items-end gap-2">
                       <label className="block flex-1">
                         <span className="rotulo">Motivo</span>

@@ -71,13 +71,33 @@ export async function estornarPagamento(id: string, _e: EstadoForm, dados: FormD
   const usuario = await exigirAcessoPacientesAction()
   const motivo = String(dados.get('motivo') ?? '').trim()
   if (motivo.length < 3) return { erro: 'Informe o motivo do estorno.' }
-  const p = await db.pagamento.findUnique({ where: { id }, include: { paciente: { select: { nome: true } } } })
+  const p = await db.pagamento.findUnique({ where: { id }, include: { paciente: { select: { id: true, nome: true } } } })
   if (!p) return { erro: 'Pagamento não encontrado.' }
   if (p.estornadoEm) return { erro: 'Este pagamento já foi estornado.' }
   await db.pagamento.update({ where: { id }, data: { estornadoEm: new Date(), estornoMotivo: motivo.slice(0, 300) } })
   await auditar({ usuario, acao: 'ALTERAR', entidade: 'Pagamento', entidadeId: id, resumo: `Estornou pagamento de ${formatarReais(p.valorCentavos)} de ${p.paciente.nome} (motivo: ${motivo.slice(0, 120)})` })
   revalidatePath('/sistema', 'layout')
-  return { ok: 'Pagamento estornado.' }
+  // Volta para a ficha com o aviso no topo do quadro (a linha do pagamento muda e a mensagem sumiria).
+  redirect(`/sistema/pacientes/${p.paciente.id}?aviso=estornado#financeiro`)
+}
+
+/** Corrige só a observação (descrição do recibo) — erro de texto não precisa de estorno. */
+export async function corrigirObservacao(id: string, _e: EstadoForm, dados: FormData): Promise<EstadoForm> {
+  const usuario = await exigirAcessoPacientesAction()
+  const nova = String(dados.get('observacao') ?? '').trim().slice(0, 230) || null
+  const p = await db.pagamento.findUnique({ where: { id }, include: { paciente: { select: { id: true, nome: true } } } })
+  if (!p) return { erro: 'Pagamento não encontrado.' }
+  if (p.estornadoEm) return { erro: 'Pagamento estornado não pode ser alterado.' }
+  await db.pagamento.update({ where: { id }, data: { observacao: nova } })
+  await auditar({
+    usuario,
+    acao: 'ALTERAR',
+    entidade: 'Pagamento',
+    entidadeId: id,
+    resumo: `Corrigiu a observação do pagamento de ${formatarReais(p.valorCentavos)} de ${p.paciente.nome}: "${p.observacao ?? ''}" → "${nova ?? ''}"`.slice(0, 500),
+  })
+  revalidatePath('/sistema', 'layout')
+  redirect(`/sistema/pacientes/${p.paciente.id}?aviso=${p.reciboEmitido ? 'corrigido-emitido' : 'corrigido'}#financeiro`)
 }
 
 /** Marca/desmarca "recibo emitido no Receita Saúde". */
