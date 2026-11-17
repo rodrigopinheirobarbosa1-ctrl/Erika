@@ -51,6 +51,7 @@ export default async function Financeiro({ searchParams }: { searchParams: Promi
               + Pagamento recebido
             </LinkBotao>
             <LinkBotao href="/sistema/financeiro/despesas">Despesas</LinkBotao>
+            <LinkBotao href={`/sistema/financeiro/receita-saude?mes=${mes}`}>Recibos (Receita Saúde)</LinkBotao>
           </>
         }
       />
@@ -86,9 +87,9 @@ export default async function Financeiro({ searchParams }: { searchParams: Promi
           )}
           {recibosPendentes > 0 && (
             <p className="mt-3 text-xs text-amber-800">
-              {recibosPendentes} pagamento(s) sem recibo marcado como emitido no Receita Saúde —{' '}
-              <Link href={`/sistema/financeiro/relatorio?mes=${mes}`} className="underline">
-                ver no relatório
+              {recibosPendentes} pagamento(s) sem recibo emitido no Receita Saúde —{' '}
+              <Link href={`/sistema/financeiro/receita-saude?mes=${mes}`} className="underline">
+                emitir em lote
               </Link>
               .
             </p>

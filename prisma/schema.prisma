@@ -415,3 +415,14 @@ model EnvioMensagem {
   @@unique([atendimentoId, modeloId])
   @@index([enviadoEm])
 }
+
+// ----------------------------------------------------------------------------
+// CONFIGURAÇÕES (dados que não podem ir para o código, que é público)
+// ----------------------------------------------------------------------------
+
+/// Pares chave/valor. Ex.: "cpfProfissional" (vai no arquivo do Receita Saúde).
+model Configuracao {
+  chave        String   @id
+  valor        String
+  atualizadoEm DateTime @updatedAt
+}

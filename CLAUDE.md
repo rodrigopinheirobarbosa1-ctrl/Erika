@@ -38,6 +38,11 @@ dev: explicar passos em português, bem detalhados. Nada roda no computador dele
   `src/lib/video.ts`, nome aleatório sem dados do paciente) na 1ª sessão online.
   `Atendimento.linkOnline` só quando a sessão tem link próprio; exibir sempre via
   `linkDaSessao(linkOnline, salaVideo)`.
+- Receita Saúde: NÃO há API oficial. Emissão em lote por arquivo CSV importado no
+  Carnê-Leão (e-CAC → Escrituração → Importar Escrituração), leiaute do Manual do Receita
+  Saúde v2.1, pergunta 24 (`src/lib/receita-saude.ts`, 16 campos, sem cabeçalho, ≤1000
+  linhas, mesmo ano, ocupação 255). CPF da profissional fica na tabela `Configuracao`
+  (nunca no código — repositório público).
 - Enums do Prisma: usar os nomes (`'PRESENCIAL'`), valores em CENTAVOS, datas de calendário à meia-noite UTC.
 - O repositório é PÚBLICO: nunca commitar dados reais, documentos ou chaves.
 - Divulgação de psicólogo (CFP): sempre mostrar nome + CRP; não usar depoimentos de
